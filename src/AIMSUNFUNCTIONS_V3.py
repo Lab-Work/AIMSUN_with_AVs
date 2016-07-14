@@ -259,7 +259,7 @@ def read_validation_data(start_time_str, end_time_str, name_strs, valid_file_pat
 #=================================================================================================
 # ---------------------- Functions for setting up the simulation ---------------------------------
 
-def setup_scenario(model, scenario_name, demand):
+def setup_scenario(model, scenario_name, demand, det_interval="00:05:00"):
     """
     Set up the scenario and connect scenario with demand
     :param model: GK Model
@@ -286,7 +286,7 @@ def setup_scenario(model, scenario_name, demand):
     paras = scenario.getInputData()
 
     # set the detection and statistical intervals as 5 min
-    det_interval = "00:05:00"
+    det_interval = det_interval
     paras.setDetectionInterval(GKTimeDuration.fromString(QString(det_interval)))
     paras.setStatisticalInterval(GKTimeDuration.fromString(QString(det_interval)))
 
@@ -1592,6 +1592,46 @@ def __simulate_experiment(simulator, avg_result):
 
     # simulator.postSimulate()
 
+def simulate_experiment(simulator, avg_result):
+    """
+    This function simulates the replications in an experiment.
+    :param simulator: the created simulator from create_simulator
+    :param avg_result: the replication from setup_replication
+    :return:
+    """
+    print_cmd('\nReset replications...')
+
+    # first reset replications
+    avg_result.resetReplications()
+
+    # add replications to simulator
+    replication_list = avg_result.getReplications()
+
+    for replication in replication_list:
+        simulation_task = GKSimulationTask(replication, GKReplication.eBatch, "", "", True)  # Other approach
+        simulator.addSimulationTask(simulation_task)
+        # print_cmd('Added replication {0} to simulator with status {1}. '.format(replication.getId(),
+        #                                                                        replication.getSimulationStatus())
+        # print_cmd('pending {0}; done {1}; discarded {2}; loaded {3}'.format(GKGenericExperiment.ePending,
+        #                                                                    GKGenericExperiment.eDone,
+        #                                                                    GKGenericExperiment.eDiscarded,
+        #                                                                    GKGenericExperiment.eLoaded)
+
+
+    # simulate model
+    if not simulator.isBusy():
+        print_cmd('Simulating...\n')
+        sim_status = simulator.simulate()
+    else:
+        print_cmd('Simulator is busy\n')
+
+    # make sure correctly simulated
+    if sim_status is True:
+        print_cmd('Simulation finished\n')
+    else:
+        print_cmd('ERROR: Simulation failed\n')
+
+
 
 def __read_detector_data(model, data_origin):
     """
@@ -1620,7 +1660,7 @@ def __read_detector_data(model, data_origin):
             # print_cmd('----Reading Detector {0}...'.format(det_name))
 
             # add to dict
-            # flow, speed
+            # speed (mph), count
             avg_data[det_name] = [[],[]]
 
             speedData = det.getDataValueTS(speedColumn)
@@ -1630,7 +1670,7 @@ def __read_detector_data(model, data_origin):
                 print_cmd('ERROR: Detector {0} has no data available'.format(det_name))
             else:
                 # print_cmd('----size of data is: {0}'.format(countData.size()))
-                # TODO: DONE: the speed data returned from AIMSUN is in km/h; 1 km/h = 0.62137 mph
+                # the speed data returned from AIMSUN is in km/h; 1 km/h = 0.62137 mph when AIMSUN is specified in metric
                 for interval in range(countData.size()):
                     avg_data[det_name][0].append(speedData.getValue(GKTimeSerieIndex(interval))[0]*KMH2MPH)
                     avg_data[det_name][1].append(countData.getValue(GKTimeSerieIndex(interval))[0])
@@ -1642,6 +1682,59 @@ def __read_detector_data(model, data_origin):
                 # print_cmd('----Detector {0} data:{1}'.format(det.getName(), avg_data[det.getName()])
 
     return avg_data
+
+
+
+def extract_detector_data(model, data_origin):
+    """
+    This function extracts all detector data from AIMSUN.
+    :param model: GK Model
+    :param data_origin: a list of replications:
+            [a replication or the average_result(which is a subtype of GKReplication)]
+    :return: a dict, avg_data[detector_name] = [[speed mph],[count in respective detection cycle]]
+    """
+    avg_data = OrderedDict()
+
+    det_type = model.getType("GKDetector")
+    # read data for each replication and then the average
+    for replication in data_origin:
+
+        print_cmd('\nReading Replication data: {0}'.format(replication.getName()))
+
+        # get the column id
+        speedColumn = det_type.getColumn(GK.BuildContents(GKColumnIds.eSpeed, replication, None))
+        countColumn = det_type.getColumn(GK.BuildContents(GKColumnIds.eCount, replication, None))
+
+        # read each detector
+        for det in model.getCatalog().getObjectsByType(det_type).itervalues():
+
+            det_name = str(det.getName())
+            # print_cmd('----Reading Detector {0}...'.format(det_name))
+
+            # add to dict
+            # speed (mph), count
+            avg_data[det_name] = [[],[]]
+
+            speedData = det.getDataValueTS(speedColumn)
+            countData = det.getDataValueTS(countColumn)
+
+            if countData.size() == 0 or speedData.size() == 0 or countData.size() != speedData.size():
+                print_cmd('ERROR: Detector {0} has no data available'.format(det_name))
+            else:
+                # print_cmd('----size of data is: {0}'.format(countData.size()))
+                # the speed data returned from AIMSUN is in km/h; 1 km/h = 0.62137 mph when AIMSUN is specified in metric
+                for interval in range(countData.size()):
+                    avg_data[det_name][0].append(speedData.getValue(GKTimeSerieIndex(interval))[0]*KMH2MPH)
+                    avg_data[det_name][1].append(countData.getValue(GKTimeSerieIndex(interval))[0])
+
+                    if _show_detector_data:
+                        print_cmd('--------interval {0}: speed {1}; count {2}'.format(interval,
+                                                                  avg_data[det_name][0][-1],
+                                                                  avg_data[det_name][1][-1]))
+                # print_cmd('----Detector {0} data:{1}'.format(det.getName(), avg_data[det.getName()])
+
+    return avg_data
+
 
 
 def __get_averaged_detector_data(model, avg_result, plugin):
@@ -1672,6 +1765,8 @@ def __get_averaged_detector_data(model, avg_result, plugin):
     avg_data = __read_detector_data(model, [avg_result])
 
     return avg_data
+
+
 
 
 # evaluate the objective function
