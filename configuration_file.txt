@@ -1,10 +1,40 @@
 # This is the configuration file for
 # - Specifying the scenarios (percent of AVs) for fundamental diagram calibration, 
 #   and scenarios (variation of AVs) for the actual simulation
+# ===========================================
+# configure the simulation information
 num_intervals:12
 interval_duration:300
 detection_cycle:20
-sim_scenarios:25,75
-sim_seeds:3252,59230,12424,24232,2143
-fd_scenarios:1,10,20,30,40,50,60,70,80,90
-fd_seeds:3252,59230,12424,24232,2143
+sim_scenarios:0,25,50,75,100
+sim_seeds:3252,59230,12424,24232,2143,23424,45234,1355,24654,8763
+# ===========================================
+fd_scenarios:1,10,20,30,40,50,60,70,80,90,99
+reps_to_skip:669,687,1209,1203,797,798,1271
+det_used:429,430,431,432
+# the type identifier used in MIDETECT table
+car_type:1
+av_type:2
+# the threshold for removing noisy data points in FD
+# flow: veh/hr, speed: mph
+flow_thres:720
+speed_thres:10
+# ===========================================
+# Set the maximum possible inflow at different penetration rate of Avs
+pAVs:0,10,20,30,40,50,60,70,80,90,100
+max_inflows:3600,3600,3600,3600,3600,3600,4000,4400,4400,5000,6600
+# ===========================================
+# configurations related to the network, get these from AIMSUN ang file modeled
+us_centroid:337
+ds_centroid:341
+car_id:53
+av_id:436
+demand_id:1294
+scenario_id:1306
+experiment_id:1307
+# ===========================================
+# resolution for generating the true states
+# length of road in meters, dt in seconds
+hwy_length:4828.2
+num_cells:27
+dt:5
