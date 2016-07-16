@@ -2,7 +2,8 @@
 # 3/21/2016
 
 
-import sqlite3
+import csv
+import sys
 import time
 import warnings
 from collections import OrderedDict
@@ -88,8 +89,8 @@ warnings.filterwarnings("error")
 
 
 class Virtual_Sensors:
-    def __init__(self, work_zone, data_dir, sections, main_grid_order,
-                 replications, config,
+    def __init__(self, work_zone, sections, main_grid_order,
+                 replications,
                  aimsun_start_dur_step=(55800, 9000, 1.0), space_start_end=None, ):
         """
 
@@ -120,6 +121,7 @@ class Virtual_Sensors:
         self.__end_timestamp = self.__start_timestamp + aimsun_start_dur_step[1]
 
         # raw data from sqlite table
+        self.__organized_data = None
         self.__raw_data = None
 
     def generate_true_states_data(self, grid_resolution, traj_file, true_prefix):
@@ -134,16 +136,12 @@ class Virtual_Sensors:
 
         # =================================================
         # load the sqlite file, and get the detailed trajectory table
-        if self.__raw_data is None:
+        if self.__organized_data is None:
             time0 = time.time()
             print('Status: loading data...')
-
-            con = sqlite3.connect(traj_file)
-            cur = con.cursor()
-            self._raw_data = cur.execute("SELECT * FROM MIVEHTRAJECTORY")
-
+            self.__load_data(traj_file)
             time1 = time.time()
-            print('Status: Loaded trajectory data. Took {0:.2f} s. Organizing...'.format(time1 - time0))
+            print('Status: Loaded trajectory data. Took {0:.2f} s. Organizing...'.format(time1-time0))
             self.__organize_data()
 
             time1 = time.time()
@@ -153,7 +151,7 @@ class Virtual_Sensors:
         time0 = time.time()
         print('\n')
         print('Generating true states data...')
-        self.__build_true_flow_density_speed_states(grid_resolution)
+        self.__build_true_flow_density_speed_states(grid_resolution, true_prefix)
         time1 = time.time()
         elapsed_time = '{0:.2f}'.format(time1 - time0)
         print('Elapsed time: ' + elapsed_time + ' s')
@@ -196,6 +194,15 @@ class Virtual_Sensors:
 
         return sensor_parameters
 
+
+    def __load_data(self, traj_file):
+
+        self.__raw_data = np.zeros((0,11))
+        for rep in self.replications:
+            self.__raw_data = np.concatenate( [self.__raw_data,
+                                               np.genfromtxt(traj_file, dtype='str', delimiter=',')])
+
+
     def __organize_data(self):
 
         self.__organized_data = OrderedDict()
@@ -222,6 +229,7 @@ class Virtual_Sensors:
 
             if replication not in self.__organized_data:
                 self.__organized_data[replication] = OrderedDict()
+
             if vehicle not in self.__organized_data[replication]:
                 self.__organized_data[replication][vehicle] = OrderedDict()
 
@@ -298,6 +306,7 @@ class Virtual_Sensors:
             self.__organized_data[replication][vehicle][timestamp] = [ent, section, section_distance,
                                                                       travelled_distance, lane_idx, speed, acceleration]
 
+
     def __build_true_flow_density_speed_states(self, resolution, truestate_file_prefix):
 
         """
@@ -345,6 +354,10 @@ class Virtual_Sensors:
 
         for vehicle in self.__organized_data[replication]:
 
+            sys.stdout.write('\r')
+            sys.stdout.write('Status: processing vehicle {0}'.format(vehicle))
+            sys.stdout.flush()
+
             # get timestamps, sections and distances in arrays
             timestamps = np.array(list(self.__organized_data[replication][vehicle].keys()))
             sections = np.array([self.__organized_data[replication][vehicle][timestamp][1] for
@@ -370,9 +383,9 @@ class Virtual_Sensors:
             main_distances = np.delete(main_distances, dup_idxs)
             main_timestamps = np.delete(main_timestamps, dup_idxs)
 
-            print('checking vehicle: {0}'.format(vehicle))
-            print('length of vehicle traj {0}'.format(len(distances)))
-            print('length of main_distances: {0}'.format(len(main_distances)))
+            # print('checking vehicle: {0}'.format(vehicle))
+            # print('length of vehicle traj {0}'.format(len(distances)))
+            # print('length of main_distances: {0}'.format(len(main_distances)))
 
             # Make sure the vehicle was on the main freeway
             if len(main_distances) > 1:

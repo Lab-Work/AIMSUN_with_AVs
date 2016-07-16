@@ -2,6 +2,8 @@ import sys
 import time
 from collections import OrderedDict
 from os.path import exists
+import sqlite3
+import csv
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -45,11 +47,10 @@ def main(argv):
         load_workzone(folder_dir + 'topology.txt', grid_res)
 
     # Generate a Virtual_Sensor class for processing trajectory
-    truestate_generator = Virtual_Sensors(workzone, folder_dir,
+    truestate_generator = Virtual_Sensors(workzone,
                                           workzone_topo['sections'],
                                           workzone_topo['fwy_sec_order'],
                                           workzone_topo['replications'],
-                                          config,
                                           aimsun_start_dur_step,
                                           [space_grid[0], space_grid[-1]])
 
@@ -75,19 +76,25 @@ def main(argv):
                 plot_true_speed_for_rep(true_speed_file, unit='imperial', limit=[0, 80], title=title, save_fig=True)
 
                 # plot the generated true density
-                title = 'true speed sce {0} seed {1}'.format(sce, seed)
+                title = 'true density sce {0} seed {1}'.format(sce, seed)
                 true_density_file = get_file_name('truestate_prefix', sce, seed, grid=grid_res) + '_density.txt'
-                plot_true_speed_for_rep(true_density_file, unit='imperial', limit=[0, 644], title=title, save_fig=True)
+                plot_true_density_for_rep(true_density_file, unit='imperial', limit=[0, 644], title=title, save_fig=True)
 
                 continue
 
             # ==================================================
             # generate true state for this scenario and seed
-            while ~exists(get_file_name('simdone', sce, seed)):
+            while not exists(get_file_name('simdone', sce, seed)):
                 print('AIMSUN simulation for sce {0} seed {1} has not finished...'.format(sce, seed))
                 time.sleep(10)
 
-            traj_file = get_file_name('sqlite', sce, seed)
+            # ==================================================
+            # convert sqlite to trajectory data
+            if not exists(get_file_name('traj_data',sce, seed)):
+                extract_traj_to_csv(get_file_name('sqlite', sce, seed),
+                                    get_file_name('traj_data', sce, seed))
+
+            traj_file = get_file_name('traj_data', sce, seed)
             # true states are saved in mph and veh/mile
             truestate_generator.generate_true_states_data(grid_res, traj_file,
                                                           truestate_file_prefix)
@@ -104,9 +111,9 @@ def main(argv):
             plot_true_speed_for_rep(true_speed_file, unit='imperial', limit=[0, 80], title=title, save_fig=True)
 
             # plot the generated true density
-            title = 'true speed sce {0} seed {1}'.format(sce, seed)
+            title = 'true density sce {0} seed {1}'.format(sce, seed)
             true_density_file = get_file_name('truestate_prefix', sce, seed, grid=grid_res) + '_density.txt'
-            plot_true_speed_for_rep(true_density_file, unit='imperial', limit=[0, 644], title=title, save_fig=True)
+            plot_true_density_for_rep(true_density_file, unit='imperial', limit=[0, 644], title=title, save_fig=True)
 
             generated_truestates[sce].append(seed)
 
@@ -130,7 +137,7 @@ def get_file_name(file_type, sce, seed, grid=(5, 178)):
         elif file_type == 'traj_data':
             return folder_dir + 'traj_data\\sim_sce{0}_seed{1}.csv'.format(sce, seed)
         elif file_type == 'truestate_prefix':
-            return folder_dir + 'true_states\\truestate_{2}s{3}m_sce{0}__seed{1}'.format(sce, seed,
+            return folder_dir + 'true_states\\truestate_{2}s{3}m_sce{0}_seed{1}'.format(sce, seed,
                                                                                          grid[0], int(grid[1]))
         else:
             raise Exception('Unrecognized file type for naming.')
@@ -140,11 +147,32 @@ def get_file_name(file_type, sce, seed, grid=(5, 178)):
             return folder_dir + 'aimsun_files/sim_sce{0}_seed{1}.sqlite'.format(sce, seed)
         elif file_type == 'simdone':
             return folder_dir + 'aimsun_files/sim_sce{0}_seed{1}_SimDone.txt'.format(sce, seed)
+        elif file_type == 'traj_data':
+            return folder_dir + 'traj_data/sim_sce{0}_seed{1}.csv'.format(sce, seed)
         elif file_type == 'truestate_prefix':
-            return folder_dir + 'true_states/truestate_{2}s{3}m_sce{0}__seed{1}'.format(sce, seed,
+            return folder_dir + 'true_states/truestate_{2}s{3}m_sce{0}_seed{1}'.format(sce, seed,
                                                                                         grid[0], int(grid[1]))
         else:
             raise Exception('Unrecognized file type for naming.')
+
+
+def extract_traj_to_csv(infile, outfile):
+    """
+    This function extracts trajectory data from infile sqlite to csv
+    :param infile: sqlite file name
+    :param outfile: csv file name
+    :return:
+    """
+    if exists(outfile):
+        print('trjectory file {0} has been previously genreated'.format(outfile))
+    else:
+        con = sqlite3.connect(infile)
+        cur = con.cursor()
+        sqlite_data = cur.execute("SELECT * FROM MIVEHDETAILEDTRAJECTORY")
+
+        with open(outfile, 'wb') as f_raw:
+            writer = csv.writer(f_raw)
+            writer.writerows(sqlite_data)
 
 
 def load_workzone(topo_file, grid_res):
@@ -269,13 +297,13 @@ def plot_true_speed_for_rep(file_name, unit='imperial', limit=(0, 40), title=Non
                    vmin=limit[0], vmax=limit[1])
     ax.autoscale(False)
 
-    ax.set_title('{0} ({1}'.format(title, unit_str))
+    ax.set_title('{0} ({1})'.format(title, unit_str))
     plt.xlabel('Time')
     plt.ylabel('Space, traffic direction $\mathbf{\Rightarrow}$')
     cax = fig.add_axes([0.95, 0.25, 0.01, 0.5])
     fig.colorbar(im, cax=cax, orientation='vertical')
     if save_fig is True:
-        fig_name = file_name.stripe('.txt') + '.png'
+        fig_name = file_name.strip('txt') + 'png'
         plt.savefig(fig_name, bbox_inches='tight')
         plt.clf()
         plt.close()
@@ -319,14 +347,14 @@ def plot_true_density_for_rep(file_name, unit='imperial', limit=(0, 40),
                    vmin=limit[0], vmax=limit[1])
     ax.autoscale(False)
 
-    ax.set_title('{0} ({1}'.format(title, unit_str))
+    ax.set_title('{0} ({1})'.format(title, unit_str))
     plt.xlabel('Time')
     plt.ylabel('Space, traffic direction $\mathbf{\Rightarrow}$')
     cax = fig.add_axes([0.95, 0.25, 0.01, 0.5])
     fig.colorbar(im, cax=cax, orientation='vertical')
 
     if save_fig is True:
-        fig_name = file_name.stripe('.txt') + '.png'
+        fig_name = file_name.strip('txt') + 'png'
         plt.savefig(fig_name, bbox_inches='tight')
         plt.clf()
         plt.close()

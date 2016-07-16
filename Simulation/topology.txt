@@ -3,7 +3,7 @@
 loc_start_end:50.0,4878.2
 time_start_dur_step:0,3600,0.2
 fwy_sec_order:329,457,456
-replications:1311
+replications:1377
 sec_id:329;length:4905.91
 sec_id:457;length:2.44;upstream:329;downstream:456
 sec_id:456;length:111.544
