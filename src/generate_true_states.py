@@ -21,8 +21,10 @@ This is the script for visualizing the simulated traffic states using trajectory
 # =====================================================================================================
 
 if sys.platform == 'win32':
-    config_file = 'C:\\Users\\TrafficControl\\Dropbox\\RenAimsunSimulation\\configuration_file.txt'
-    folder_dir = 'C:\\Users\\TrafficControl\\Dropbox\\RenAimsunSimulation\\Simulation\\'
+    config_file = 'C:\\Users\Admin\\Dropbox\\RenAimsunSimulation\\configuration_file.txt'
+    folder_dir = 'C:\\Users\\Admin\\Dropbox\\RenAimsunSimulation\\Simulation\\'
+#    config_file = 'C:\\Users\\TrafficControl\\Dropbox\\RenAimsunSimulation\\configuration_file.txt'
+#    folder_dir = 'C:\\Users\\TrafficControl\\Dropbox\\RenAimsunSimulation\\Simulation\\'
     logger_path = folder_dir + 'Logs\\'
 elif sys.platform == 'darwin':
     config_file = '../configuration_file.txt'
@@ -46,14 +48,6 @@ def main(argv):
     time_grid, space_grid, workzone_topo, aimsun_start_dur_step = \
         load_workzone(folder_dir + 'topology.txt', grid_res)
 
-    # Generate a Virtual_Sensor class for processing trajectory
-    truestate_generator = Virtual_Sensors(workzone,
-                                          workzone_topo['sections'],
-                                          workzone_topo['fwy_sec_order'],
-                                          workzone_topo['replications'],
-                                          aimsun_start_dur_step,
-                                          [space_grid[0], space_grid[-1]])
-
     # ========================================================================
     # Generate the true state for all simulation scenarios and seeds
     generated_truestates = OrderedDict()
@@ -63,11 +57,19 @@ def main(argv):
 
         for seed in config['sim_seeds']:
 
+            # Generate a Virtual_Sensor class for processing trajectory
+            truestate_generator = Virtual_Sensors(workzone,
+                                          workzone_topo['sections'],
+                                          workzone_topo['fwy_sec_order'],
+                                          workzone_topo['replications'],
+                                          aimsun_start_dur_step,
+                                          [space_grid[0], space_grid[-1]])
+
             truestate_file_prefix = get_file_name('truestate_prefix', sce, seed,
                                                   grid=grid_res)
             # check if previously generated
             if exists(truestate_file_prefix + '_density.txt'):
-                print('True state for sce {0} seed {1} previousely genereated'.format(sce, seed))
+                print('\nTrue state for sce {0} seed {1} previousely genereated'.format(sce, seed))
                 generated_truestates[sce].append(seed)
 
                 # plot the generated true speed
@@ -90,6 +92,7 @@ def main(argv):
 
             # ==================================================
             # convert sqlite to trajectory data
+            print('\nGenerating true state for for sce {0} seed {1} ...'.format(sce, seed))
             if not exists(get_file_name('traj_data',sce, seed)):
                 extract_traj_to_csv(get_file_name('sqlite', sce, seed),
                                     get_file_name('traj_data', sce, seed))
