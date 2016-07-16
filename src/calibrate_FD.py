@@ -41,7 +41,7 @@ def main(argv):
     for pAV in config['fd_scenarios']:
 
         if not exists(get_file_name('det_data', pAV)):
-            print('not exist')
+            # print('not exist')
             print('Extracting data from scenario {0}'.format(pAV))
             # extract from sqlite and calibrate FD.
             extract_clean_det_data(pAV, config)
@@ -50,11 +50,10 @@ def main(argv):
 
     # ============================================================
     # calibrate the second order FDs
-    fd_2nd_pav_list = [[0.98, 1.0],
-                       [0.0, 0.0], [0.07, 0.13], [0.17, 0.23],
+    fd_2nd_pav_list = [[0.0, 0.0], [0.07, 0.13], [0.17, 0.23],
                        [0.27, 0.33], [0.37, 0.43], [0.47, 0.53],
                        [0.57, 0.63], [0.67, 0.73], [0.77, 0.83],
-                       [0.87, 0.93]]
+                       [0.87, 0.93], [1.0, 1.0],]
     # fd_2nd_freeflow_thres = [40, 40, 40, 40, 40, 40,
     #                          40, 40, 45, 45, 45]
     fd_2nd_freeflow_thres = [40, 40, 40, 40, 40, 40,
@@ -174,50 +173,79 @@ def calibrate_NC_QLFD(cleaned_data_files, pAV_ranges, freeflow_thres,
 
     # compute the density by rho = q/v
     data = np.array(data).astype(float)
-    # convert the speed to mph
-    #    data[:, 2] = data[:, 2] / 1.609
     # remove the nan values
     # data = data[ ~np.isnan(data[:,2]) ,:]
 
     # =========================================================
-    # Get all free flow data points in the ranges to fit the quadratic curve
-    # get the data at all ranges.
-    all_ff_data = []
-    num_points = []
-    for i, p in enumerate(pAV_ranges):
-        ffInRange = ((data[:, 0] >= p[0]) & (data[:, 0] <= p[1]) & (data[:, 2] >= freeflow_thres[i]))
-        print('Got {0} data point for {1} pAV'.format(sum(ffInRange), p))
+    # Calibration procedure.
+    # If second order model:
+    #   - Fit the collapsed free flow quadratic curve using all freeflow data from all penetrations.
+    #   - Then fit each penetration individually using the same left side quadratic curve
+    # If first order model:
+    #   - Left side is same as the second order model
+    #   - Fit congested regime accordingly.
 
-        num_points.append(sum(ffInRange))
+    # -------------------------------------------------
+    # Step 1: If second order, fit the quadratic curve
+    # -------------------------------------------------
+    if order == 'second':
+        # Get all free flow data points in the ranges to fit the collapsed quadratic curve for the second order model
+        # get the data at all ranges.
+        print('\nCalibrating collapsed freeflow curve for second order model:')
+        all_ff_data = []
+        num_points = []
+        for i, p in enumerate(pAV_ranges):
+            ffInRange = ((data[:, 0] >= p[0]) & (data[:, 0] <= p[1]) & (data[:, 2] >= freeflow_thres[i]))
+            print('--- Got {0} data point for {1} pAV'.format(sum(ffInRange), p))
 
-    # =========================================================
-    # weight the free flow data by density bins
-    max_num_pts = np.max(num_points)
-    for i, p in enumerate(pAV_ranges):
+            num_points.append(sum(ffInRange))
 
-        ffInRange = ((data[:, 0] >= p[0]) & (data[:, 0] <= p[1]) & (data[:, 2] >= freeflow_thres[i]))
-        scale = np.round(max_num_pts / num_points[i])
-        print('pAV {0}: Scale {1} data point by {2} to {3} data points'.format(p, num_points[i], scale,
-                                                                               scale * num_points[i]))
-        for s in range(0, scale):
-            if all_ff_data == []:
-                all_ff_data = data[ffInRange, :]
-            else:
-                all_ff_data = np.vstack([all_ff_data, data[ffInRange, :]])
+        # weight the free flow data by density bins
+        max_num_pts = np.max(num_points)
+        for i, p in enumerate(pAV_ranges):
 
-    all_ff_pAV = all_ff_data[:, 0]
-    all_ff_flow = all_ff_data[:, 1]
-    all_ff_speed = all_ff_data[:, 2]
-    all_ff_density = all_ff_flow / all_ff_speed
+            ffInRange = ((data[:, 0] >= p[0]) & (data[:, 0] <= p[1]) & (data[:, 2] >= freeflow_thres[i]))
+            scale = np.round(max_num_pts / num_points[i])
+            print('--- pAV {0}: Scale {1} data point by {2} to {3} data points'.format(p, num_points[i], scale,
+                                                                                   scale * num_points[i]))
+            for s in range(0, scale):
+                if all_ff_data == []:
+                    all_ff_data = data[ffInRange, :]
+                else:
+                    all_ff_data = np.vstack([all_ff_data, data[ffInRange, :]])
 
-    # =========================================================
-    all_beta = 0
-    all_vm = 0
+        all_ff_pAV = all_ff_data[:, 0]
+        all_ff_flow = all_ff_data[:, 1]
+        all_ff_speed = all_ff_data[:, 2]
+        all_ff_density = all_ff_flow / all_ff_speed
+
+        # now fit a quadratic function with intercepts at origin and has related coefficient
+        # the quadratic function:
+        # q = (v_m^2 - 2wv_m)/(4wrho_m)*rho^2 + v_m*rho
+        beta_preset = 600
+        # funcQuadFit = lambda vm_beta, rho: vm_beta[0] * rho - np.power(rho, 2) * vm_beta[0] / vm_beta[1]
+        funcQuadFit = lambda vm_beta, rho: vm_beta[0] * rho - np.power(rho, 2) * vm_beta[0] / beta_preset
+        funErr = lambda vm_beta, rho, q: funcQuadFit(vm_beta, rho) - q
+        vm_beta_init = [80, 600]  # initial guess of vm is 60
+
+        vm_beta_est, success = optimize.leastsq(funErr, vm_beta_init, args=(all_ff_density, all_ff_flow))
+
+        all_vm = vm_beta_est[0]
+        all_beta = beta_preset
+        # all_beta = vm_beta_est[1]
+
+    else:
+        # For first order model, use the preset value
+        all_vm = preset_vm_beta[0]
+        all_beta = preset_vm_beta[1]
+
+    # -------------------------------------------------
+    # Step 1: Fit congested part and find the maximum flow for each penetration rate
+    # -------------------------------------------------
+    # define the free flow quadratic part
     funcQuadAll = lambda vm, beta_para, rho: vm * rho - np.power(rho, 2) * vm / beta_para
 
-    # =========================================================
     # Visualize all fundamental diagram on a single plot
-    # fig_window_all = plt.figure(figsize=(15,10))
     if order == 'second':
         fig_all, ax = plt.subplots(figsize=(15, 10))
         cm = plt.cm.get_cmap('jet')
@@ -233,57 +261,23 @@ def calibrate_NC_QLFD(cleaned_data_files, pAV_ranges, freeflow_thres,
         speed = data[inRange, 2]
         density = flow / speed
 
-        print('Calibrating FD for {0} pAV using {1} data points...'.format(pAV_range, flow.size))
-
-        # =========================================================
-        # Calibrate the fundamental diagrams
-        # =========================================================
-        freeFlow = (speed >= freeflow_thres[i])
-
+        print('Calibrating {2} order FD for {0} pAV using {1} data points...'.format(pAV_range, flow.size,
+                                                                                     order))
         # ---------------------------------------------------------
-        # fit the congested part first
+        # fit the congested regime
+        freeFlow = (speed >= freeflow_thres[i])
         shifted_dens = density[~freeFlow] - rho_m
         w, _, _, _ = np.linalg.lstsq(shifted_dens[:, np.newaxis], flow[~freeFlow])
         w = w[0]
 
-        # ----------------------------------------------------------
-        # Collapsed quadratic curve. Use the first entry, which should be the largest penetration to calibrate the
-        # collapsed FD for all penetrations
-        if i == 0:
-            if preset_vm_beta is None:
-                # now fit a quadratic function with intercepts at origin and has related coefficient
-                # the quadratic function:
-                # q = (v_m^2 - 2wv_m)/(4wrho_m)*rho^2 + v_m*rho
-                funcQuadFit = lambda vm_beta, rho: vm_beta[0] * rho - np.power(rho, 2) * vm_beta[0] / vm_beta[1]
-                funErr = lambda vm_beta, rho, q: funcQuadFit(vm_beta, rho) - q
-                vm_beta_init = [80, 600]  # initial guess of vm is 60
+        # compute q_max and rho_c
+        # beta = 4*w*rho_m/(2*w - vm_est)
+        rho_c = (-(w * all_beta - all_vm * all_beta) -
+                 np.sqrt(np.power(w * all_beta - all_vm * all_beta, 2) - 4 * all_vm * (-w * all_beta * rho_m))) / (
+                    2 * all_vm)
+        q_max = funcQuadAll(all_vm, all_beta, rho_c)
 
-                vm_beta_est, success = optimize.leastsq(funErr, vm_beta_init, args=(all_ff_density, all_ff_flow))
-
-                all_vm = vm_beta_est[0]
-                all_beta = vm_beta_est[1]
-
-            else:
-                all_vm = preset_vm_beta[0]
-                all_beta = preset_vm_beta[1]
-
-            # compute q_max and rho_c
-            # beta = 4*w*rho_m/(2*w - vm_est)
-            rho_c = (-(w * all_beta - all_vm * all_beta) -
-                     np.sqrt(np.power(w * all_beta - all_vm * all_beta, 2) - 4 * all_vm * (-w * all_beta * rho_m))) / (
-                        2 * all_vm)
-            q_max = funcQuadAll(all_vm, all_beta, rho_c)
-
-            print('Calibrated QL FD for all pAVs using {0} data points:'.format(all_ff_flow.size))
-
-        else:
-            # compute the intersection with the collapsed curve
-            rho_c = (-(w * all_beta - all_vm * all_beta) -
-                     np.sqrt(np.power(w * all_beta - all_vm * all_beta, 2) - 4 * all_vm * (-w * all_beta * rho_m))) / (
-                        2 * all_vm)
-            q_max = funcQuadAll(all_vm, all_beta, rho_c)
-
-            print('Computed the critical density for {0} pAV'.format(pAV_range))
+        print('Computed the critical density for {0} pAV'.format(pAV_range))
 
         print('-- freeflow: q = v_m*rho - v_m*rho^2/beta')
         print('-- congflow: q = w(rho - rho_m)')
@@ -300,10 +294,7 @@ def calibrate_NC_QLFD(cleaned_data_files, pAV_ranges, freeflow_thres,
         fig = fig_window.add_subplot(111)
 
         # freeflow side
-        if i == 0:
-            plt.scatter(all_ff_density, all_ff_flow, c='g', linewidths=0, marker='o')
-        else:
-            plt.scatter(density[freeFlow], flow[freeFlow], c='g', linewidths=0, marker='o')
+        plt.scatter(density[freeFlow], flow[freeFlow], c='g', linewidths=0, marker='o')
         dens = np.linspace(0, rho_c, 100)
         plt.plot(dens, funcQuadAll(all_vm, all_beta, dens), 'r-', linewidth=2.0)
 
@@ -496,7 +487,7 @@ def extract_clean_det_data(sce, config):
             # skip the lines for repliation 798, which is used to generate the initial congested state
             rep_id = row[col['rep_id']]
             det_id = row[col['det_id']]
-            step = row[col['step']]
+            step = int(row[col['step']])
 
             sys.stdout.write('\r')
             sys.stdout.write('Status: processing row {0}'.format(i))
