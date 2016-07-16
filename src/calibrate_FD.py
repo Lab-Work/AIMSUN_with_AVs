@@ -1,11 +1,11 @@
 import csv
+import sqlite3
 import sys
 from collections import OrderedDict
 from os.path import exists
 
 import matplotlib.pyplot as plt
 import numpy as np
-import sqlite3
 from matplotlib.offsetbox import AnchoredText
 from scipy import optimize
 
@@ -40,14 +40,17 @@ def main(argv):
     file_list = []
     for pAV in config['fd_scenarios']:
 
-        # extract from sqlite and calibrate FD.
-        extract_clean_det_data(pAV, config)
+        if not exists(get_file_name('det_data', pAV)):
+            print('not exist')
+            print('Extracting data from scenario {0}'.format(pAV))
+            # extract from sqlite and calibrate FD.
+            extract_clean_det_data(pAV, config)
 
         file_list.append(get_file_name('det_data', pAV))
 
     # ============================================================
     # calibrate the second order FDs
-    fd_2nd_pav_list = [[1.0, 1.0],
+    fd_2nd_pav_list = [[0.98, 1.0],
                        [0.0, 0.0], [0.07, 0.13], [0.17, 0.23],
                        [0.27, 0.33], [0.37, 0.43], [0.47, 0.53],
                        [0.57, 0.63], [0.67, 0.73], [0.77, 0.83],
@@ -60,7 +63,7 @@ def main(argv):
     rho_max = 644  # veh/mile
     preset_vm_beta = calibrate_NC_QLFD(file_list, fd_2nd_pav_list,
                                        fd_2nd_freeflow_thres, rho_max,
-                                       preset_vm_beta, save_fig=True)
+                                       preset_vm_beta, save_fig=True, order='second')
 
     # ============================================================
     # calibrate the first order FDs
@@ -68,7 +71,7 @@ def main(argv):
                        [0.0, 0.55], [0.0, 0.65], [0.0, 0.75], [0.0, 0.85], [0.0, 0.95]]
     fd_1st_freeflow_thres = [40, 40, 40, 40, 40, 40, 40, 40, 40, 40]
     calibrate_NC_QLFD(file_list, fd_1st_pav_list, fd_1st_freeflow_thres,
-                      rho_max, preset_vm_beta, save_fig=True)
+                      rho_max, preset_vm_beta, save_fig=True, order='first')
 
 
 def load_configuration(file_name):
@@ -107,6 +110,8 @@ def get_file_name(file_type, sce=10):
             return folder_dir + 'detector_data\\fd_sce{0}.csv'.format(sce)
         elif file_type == 'sqlite':
             return folder_dir + 'aimsun_files\\fd_sce{0}.sqlite'.format(sce)
+        elif file_type == 'raw_data':
+            return folder_dir + 'detector_data\\raw_fd_sce{0}.csv'.format(sce)
         elif file_type == '1stFDs':
             return folder_dir + 'calibrated_FDs\\1stFD_sce{0}.png'.format(sce)
         elif file_type == '2ndFDs':
@@ -118,6 +123,8 @@ def get_file_name(file_type, sce=10):
     elif sys.platform == 'darwin':
         if file_type == 'det_data':
             return folder_dir + 'detector_data/fd_sce{0}.csv'.format(sce)
+        elif file_type == 'raw_data':
+            return folder_dir + 'detector_data/raw_fd_sce{0}.csv'.format(sce)
         elif file_type == 'sqlite':
             return folder_dir + 'aimsun_files/fd_sce{0}.sqlite'.format(sce)
         elif file_type == '1stFDs':
@@ -329,10 +336,10 @@ def calibrate_NC_QLFD(cleaned_data_files, pAV_ranges, freeflow_thres,
 
         if save_fig is True:
             if order == 'second':
-                pav_name = int((pAV_range[0] + pAV_range[1]) * 100)
+                pav_name = int((pAV_range[0] + pAV_range[1]) * 50)
                 plt.savefig('{0}'.format(get_file_name('2ndFDs', pav_name)), bbox_inches='tight')
             elif order == 'first':
-                pav_name = int(pAV_range[1](100))
+                pav_name = int(pAV_range[1]*100)
                 plt.savefig('{0}'.format(get_file_name('1stFDs', pav_name)), bbox_inches='tight')
             else:
                 raise Exception('unrecognized FD order')
@@ -430,110 +437,133 @@ def extract_clean_det_data(sce, config):
     :param config: the configuration loaded from config file
     :return: saved in det_data folder
     """
-    # extract raw data
-    con = sqlite3.connect(get_file_name('sqlite', sce))
-    cur = con.cursor()
-    raw_data = cur.execute("SELECT * FROM MIDETEC")
-
-    # get column names
-    headers = [description[0] for description in cur.description]
 
     # =================================================================
+    # extract raw data from sqlite
+    if True:
+        con = sqlite3.connect(get_file_name('sqlite', sce))
+        cur = con.cursor()
+        sqlite_data = cur.execute("SELECT * FROM MIDETEC")
+
+        # get column names
+        headers = [description[0] for description in cur.description]
+
+        with open(get_file_name('raw_data',sce),'wb') as f_raw:
+            writer = csv.writer(f_raw)
+            writer.writerow(headers)
+            writer.writerows(sqlite_data)
+
+    # =================================================================
+    # load csv and loop through csv file, which is much faster than looping through sqlite
     # extract the specific columns to the following format
     # columns: p_rate, [flow(veh/hr), speed(kph), density(veh/km)],
-    col = {}
-    for i, x in enumerate(headers):
-        if x == 'did':
-            col['rep_id'] = i
-        elif x == 'oid':
-            col['det_id'] = i
-        elif x == 'sid':
-            col['veh_type'] = i
-        elif x == 'ent':
-            col['step'] = i
-        elif x == 'flow':
-            col['flow'] = i
-        elif x == 'speed':
-            col['speed'] = i
-        elif x == 'density':
-            col['density'] = i
+    with open(get_file_name('raw_data', sce), 'r') as f_raw:
+        raw_data = csv.reader(f_raw)
+        headers = raw_data.next()
+        col = {}
+        for i, x in enumerate(headers):
+            if x == 'did':
+                col['rep_id'] = i
+            elif x == 'oid':
+                col['det_id'] = i
+            elif x == 'sid':
+                col['veh_type'] = i
+            elif x == 'ent':
+                col['step'] = i
+            elif x == 'flow':
+                col['flow'] = i
+            elif x == 'speed':
+                col['speed'] = i
+            elif x == 'density':
+                col['density'] = i
 
-    # save the data in a sorted dictionary
-    # data['rep_id']['det_id']['step'] = [pAV, flow(veh/hr), speed(kph), density(veh/km)]
-    data = OrderedDict()
-    idx_pAV = 0
-    idx_flow = 1
-    idx_speed = 2
-    idx_density = 3
-    idx_flow_AV = 4
-    len_idx = 5
+        # save the data in a sorted dictionary
+        # data['rep_id']['det_id']['step'] = [pAV, flow(veh/hr), speed(kph), density(veh/km)]
+        data = OrderedDict()
+        idx_pAV = 0
+        idx_flow = 1
+        idx_speed = 2
+        idx_density = 3
+        idx_flow_AV = 4
+        len_idx = 5
 
-    for row in raw_data:
-        # skip the lines for repliation 798, which is used to generate the initial congested state
-        rep_id = row[col['rep_id']]
-        det_id = row[col['det_id']]
-        step = int(row[col['step']])
+        # skipped unnecessary things
 
-        # -------------------------------------------------------------
-        # skip freeflow replications
-        # if rep_id == '670' or rep_id == '671' or rep_id == '672' or rep_id == '673' or rep_id == '674':
-        #     continue
+        i = 0
+        det_used = [str(d) for d in config['det_used']]
+        reps_to_skip = [str(r) for r in config['reps_to_skip']]
+        for row in raw_data:
+            # skip the lines for repliation 798, which is used to generate the initial congested state
+            rep_id = row[col['rep_id']]
+            det_id = row[col['det_id']]
+            step = row[col['step']]
 
-        # skip detectors
-        if det_id not in config['det_used']:
-            # print('skipeed detector {0}'.format(det_id))
-            continue
+            sys.stdout.write('\r')
+            sys.stdout.write('Status: processing row {0}'.format(i))
+            sys.stdout.flush()
+            i += 1
+            # -------------------------------------------------------------
+            # skip freeflow replications
+            # if rep_id == '670' or rep_id == '671' or rep_id == '672' or rep_id == '673' or rep_id == '674':
+            #     continue
 
-        # -------------------------------------------------------------
-        # skip unneeded data
-        # those are the average replication or the warm up replication.
-        if rep_id in config['reps_to_skip']:
-            # print('skipped replication {0}'.format(rep_id))
-            continue
+            # skip detectors
+            if det_id not in det_used:
+                # print('skipeed detector {0}'.format(det_id))
+                continue
 
-        # this is the cumulative flow and speed
-        if step == 0:
-            # print('skipped cumulative flow')
-            continue
-        # -------------------------------------------------------------
+            # skip unneeded data
+            # those are the average replication or the warm up replication.
+            if rep_id in reps_to_skip:
+                # print('skipped replication {0}'.format(rep_id))
+                continue
 
-        if rep_id not in data.keys():
-            data[ rep_id ] = OrderedDict()
+            # this is the cumulative flow and speed
+            if step == 0:
+                # print('skipped cumulative flow')
+                continue
+            # -------------------------------------------------------------
+            # print('eff')
+            if rep_id not in data.keys():
+                data[rep_id] = OrderedDict()
 
-        if det_id not in data[rep_id].keys():
-            data[rep_id][det_id] = OrderedDict()
+            if det_id not in data[rep_id].keys():
+                data[rep_id][det_id] = OrderedDict()
 
-        if step not in data[rep_id][det_id].keys():
-            data[rep_id][det_id][step] = np.zeros(len_idx)
+            if step not in data[rep_id][det_id].keys():
+                data[rep_id][det_id][step] = np.zeros(len_idx)
 
-        # now save the data into the corresponding location
-        if row[col['veh_type']] == 0:
-            # the total flow, speed, density
-            data[rep_id][det_id][step][idx_flow] = float( row[col['flow']] )
-            data[rep_id][det_id][step][idx_speed] = float( row[col['speed']] )
-            data[rep_id][det_id][step][idx_density] = float( row[col['density']] )
-        elif row[col['veh_type']] == config['av_type']:
-            # the row for AV
-            data[rep_id][det_id][step][idx_flow_AV] = float( row[col['flow']] )
+            # save different types of vehicles
+            if row[col['veh_type']] == '0':
+                # the total flow, speed, density
+                data[rep_id][det_id][step][idx_flow] = float(row[col['flow']])
+                data[rep_id][det_id][step][idx_speed] = float(row[col['speed']])
+                data[rep_id][det_id][step][idx_density] = float(row[col['density']])
+            elif row[col['veh_type']] == str(config['av_type']):
+                # the row for AV
+                data[rep_id][det_id][step][idx_flow_AV] = float(row[col['flow']])
 
-        # Now compute the penetration ratio
-        for rep_id in data.keys():
-            for det_id in data[rep_id].keys():
-                for step in data[rep_id][det_id].keys():
+    # now compute the penetration rate
+    for rep_id in data.keys():
+        for det_id in data[rep_id].keys():
+            for step in data[rep_id][det_id].keys():
 
-                    if data[rep_id][det_id][step][idx_flow] != 0:
-                        data[rep_id][det_id][step][idx_pAV] = data[rep_id][det_id][step][idx_flow_AV]\
-                                                              /data[rep_id][det_id][step][idx_flow]
-                # Now sort the steps
-                data[rep_id][det_id] = OrderedDict( sorted( data[rep_id][det_id].items() ) )
+                if data[rep_id][det_id][step][idx_flow] != 0:
+                    data[rep_id][det_id][step][idx_pAV] = data[rep_id][det_id][step][idx_flow_AV] \
+                                                          / data[rep_id][det_id][step][idx_flow]
+            # Now sort the steps
+            data[rep_id][det_id] = OrderedDict(sorted(data[rep_id][det_id].items()))
 
     # save in to formatted data for post processing
     formatted_data = []
     for rep_id in data.keys():
         for det_id in data[rep_id].keys():
             for step in data[rep_id][det_id].keys():
-                formatted_data.append([data[rep_id][det_id][step][:-1]])
+                formatted_data.append(data[rep_id][det_id][step][:-1])
     formatted_data = np.array(formatted_data).astype(float)
+
+    print('\nFinished formatting data')
+    print('formated data size: {0}'.format(formatted_data.shape))
 
     # =================================================================
     # clean the formatted data
@@ -542,23 +572,23 @@ def extract_clean_det_data(sce, config):
     #     The reason is the flow measurement has an error +- 360. In severe congestion, the speed is small,
     #     e.g, 1 mph. and flow is small e.g. 720 veh/hr, which gives a reasonable density 720 veh/mile. But
     #     if the flow is off by 360, the density will be 360 veh/mile.
-    nonZeroSpeed = (formatted_data[:,2] > 0)
+    nonZeroSpeed = (formatted_data[:, 2] > 0)
 
     # convert data to mph, and veh/mile
-    formatted_data[:,2] = formatted_data[:,2]/1.609
-    formatted_data[:,3] = formatted_data[:,3]*1.609
-    flow = formatted_data[:,1]
-    speed = formatted_data[:,2]
-    cleanData = ~( (flow <= config['flow_thres']) & (speed <= config['speed_thres']) ) & nonZeroSpeed
-    cleaned_data = formatted_data[cleanData,:]
+    formatted_data[:, 2] = formatted_data[:, 2] / 1.609
+    formatted_data[:, 3] = formatted_data[:, 3] * 1.609
+    flow = formatted_data[:, 1]
+    speed = formatted_data[:, 2]
+    cleanData = ~((flow <= config['flow_thres']) & (speed <= config['speed_thres'])) & nonZeroSpeed
+    cleaned_data = formatted_data[cleanData, :]
 
     # =================================================================
     # output cleaned detector data in file
     cleaned_header = ['pav', 'flow(veh/hr)', 'speed(mph)', 'density(veh/mile)']
     with open(get_file_name('det_data', sce), 'w+') as f_clean:
-        f_clean.write( ','.join( i for i in cleaned_header ) + '\n' )
-        for row in range(0, cleaned_data.shape[0] ):
-            f_clean.write( ','.join( str(i) for i in cleaned_data[row,:]) + '\n' )
+        f_clean.write(','.join(i for i in cleaned_header) + '\n')
+        for row in range(0, cleaned_data.shape[0]):
+            f_clean.write(','.join(str(i) for i in cleaned_data[row, :]) + '\n')
 
 
 if __name__ == "__main__":
