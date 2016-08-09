@@ -122,13 +122,15 @@ class Virtual_Sensors:
         # raw data from sqlite table
         self.__organized_data = None
         self.__raw_data = None
+        self.__veh_type = OrderedDict()
 
-    def generate_true_states_data(self, grid_resolution, traj_file, true_prefix):
+    def generate_true_states_data(self, grid_resolution, traj_file, veh_type_file, true_prefix):
         """
         This function loads the trajectory sqlite file and genreate the true states (speed and density in imperial) in
         true_prefix files
         :param grid_resolution: (s,m) the resolution of the true grid
-        :param traj_file: sqlite file
+        :param traj_file: trajectory data file csv
+        :param veh_type_file: csv file for the MIVEHTRAJECTORY table
         :param true_prefix: prefix_density.txt; prefix_speed.txt
         :return:
         """
@@ -138,7 +140,7 @@ class Virtual_Sensors:
         if self.__organized_data is None:
             time0 = time.time()
             print('Status: loading data...')
-            self.__load_data(traj_file)
+            self.__load_data(traj_file, veh_type_file)
             time1 = time.time()
             print('Status: Loaded trajectory data. Took {0:.2f} s. Organizing...'.format(time1-time0))
             self.__organize_data()
@@ -194,12 +196,28 @@ class Virtual_Sensors:
         return sensor_parameters
 
 
-    def __load_data(self, traj_file):
+    def __load_data(self, traj_file, veh_type_file):
 
         self.__raw_data = np.zeros((0,11))
         for rep in self.replications:
             self.__raw_data = np.concatenate( [self.__raw_data,
                                                np.genfromtxt(traj_file, dtype='str', delimiter=',')])
+
+        # read the veh_type table file and save in to dictionary
+        with open(veh_type_file, 'r') as f_veh_type:
+            for line in f_veh_type:
+                # each line:
+                # rep_id, veh_id, type_id, origin_id, destination_id, entranceTime, exitTime, travelTime, delayTime
+                if len(line) == 0:
+                    continue
+
+                items = line.strip().split(',')
+                if int(items[0]) not in self.replications:
+                    # skip unrelated replications
+                    continue
+
+                # keep the vehicle id and type both as int
+                self.__veh_type[int(items[1])] = int(items[2])
 
 
     def __organize_data(self):
@@ -306,7 +324,7 @@ class Virtual_Sensors:
                                                                       travelled_distance, lane_idx, speed, acceleration]
 
 
-    def __build_true_flow_density_speed_states(self, resolution, truestate_file_prefix):
+    def __build_true_flow_density_speed_states(self, resolution, truestate_file_prefix, av_type=436):
 
         """
         This function generates matrices that hold the true traffic state on
@@ -330,15 +348,18 @@ class Virtual_Sensors:
         # get the space cell grids only for the section investigation
         num_pt = round((self.__space_end - self.__space_start) / agg_dist) + 1
         space_cell_bounds = np.linspace(self.__space_start, self.__space_end, num_pt)
+        # print('VS: space_cell_bounds: {0}'.format(space_cell_bounds))
 
         # get the time cell grids only for the time domain under investigation
         num_pt = round((self.__end_timestamp - self.__start_timestamp) / agg_sec) + 1
         time_cell_bounds = np.linspace(self.__start_timestamp, self.__end_timestamp, num_pt) - self.__start_timestamp
+        # print('VS: time_cell_bounds: {0}'.format(time_cell_bounds))
 
         # initialize an empty matrix for the space sum and time sum on each cell
         # for n cell boundaries on an axis, there are n-1 cells on that axis
         spaces_sum_mat = np.zeros((len(space_cell_bounds) - 1, (len(time_cell_bounds) - 1)))
         times_sum_mat = np.zeros((len(space_cell_bounds) - 1, (len(time_cell_bounds) - 1)))
+        av_times_sum_mat = np.zeros((len(space_cell_bounds) - 1, (len(time_cell_bounds) - 1)))
 
         real_space_cell_bounds = space_cell_bounds
         # space_cell_bounds = np.unique(list(space_cell_bounds) + list(section_bounds))
@@ -418,9 +439,14 @@ class Virtual_Sensors:
                         times_sum_mat[d_idx, t_idx] = times_sum_mat[d_idx, t_idx] + delta_t
                         spaces_sum_mat[d_idx, t_idx] = spaces_sum_mat[d_idx, t_idx] + delta_x
 
+                        # add av spent time
+                        if self.__veh_type[vehicle] == av_type:
+                            av_times_sum_mat[d_idx, t_idx] = av_times_sum_mat[d_idx, t_idx] + delta_t
+
         # compute flow, density and speed based on edie's definitions
         spaces_sum_mat = np.matrix(spaces_sum_mat)
         times_sum_mat = np.matrix(times_sum_mat)
+        av_times_sum_mat = np.matrix(av_times_sum_mat)
         q_mat = np.true_divide(spaces_sum_mat, cell_area)  # veh/s
         k_mat = np.true_divide(times_sum_mat, cell_area)  # veh/m
 
@@ -428,8 +454,16 @@ class Virtual_Sensors:
             v_mat = np.true_divide(spaces_sum_mat, times_sum_mat)  # m/s
             v_mat[v_mat == np.inf] = np.nan
 
+            # compute the true fraction of AVs in each cell.
+            # when the density is 0, the w wil be set as 0
+            w_mat = np.true_divide(av_times_sum_mat, times_sum_mat)
+            w_mat[np.isinf(w_mat)] = 0
+            w_mat[np.isnan(w_mat)] = 0
+
+
         # save the true states on the appropriate files
         true_density_file = truestate_file_prefix + '_density.txt'.format(agg_sec, agg_dist)
+        true_w_file = truestate_file_prefix + '_w.txt'.format(agg_sec, agg_dist)
         true_speed_file = truestate_file_prefix + '_speed.txt'.format(agg_sec, agg_dist)
 
         # fill in the nan values, using no update
@@ -450,6 +484,7 @@ class Virtual_Sensors:
         np.savetxt(true_speed_file, (3600.0/1609.0)*v_mat.T, delimiter=',')
         # save density to veh/mile
         np.savetxt(true_density_file, 1609.0*k_mat.T, delimiter=',')
+        np.savetxt(true_w_file, w_mat.T, delimiter=',')
 
     def __interpolate_space_crosses(self, time_spl, space_cell_bounds):
 

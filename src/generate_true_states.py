@@ -23,8 +23,8 @@ This is the script for visualizing the simulated traffic states using trajectory
 if sys.platform == 'win32':
     config_file = 'C:\\Users\Admin\\Dropbox\\RenAimsunSimulation\\configuration_file.txt'
     folder_dir = 'C:\\Users\\Admin\\Dropbox\\RenAimsunSimulation\\Simulation\\'
-#    config_file = 'C:\\Users\\TrafficControl\\Dropbox\\RenAimsunSimulation\\configuration_file.txt'
-#    folder_dir = 'C:\\Users\\TrafficControl\\Dropbox\\RenAimsunSimulation\\Simulation\\'
+    # config_file = 'C:\\Users\\TrafficControl\\Dropbox\\RenAimsunSimulation\\configuration_file.txt'
+    # folder_dir = 'C:\\Users\\TrafficControl\\Dropbox\\RenAimsunSimulation\\Simulation\\'
     logger_path = folder_dir + 'Logs\\'
 elif sys.platform == 'darwin':
     config_file = '../configuration_file.txt'
@@ -38,6 +38,7 @@ elif sys.platform == 'darwin':
 
 def main(argv):
     config = load_configuration(config_file)
+    plot_all = False
 
     dt = config['dt']
     dx = config['hwy_length'] / config['num_cells']
@@ -47,6 +48,10 @@ def main(argv):
     # load the work zone configuration.
     time_grid, space_grid, workzone_topo, aimsun_start_dur_step = \
         load_workzone(folder_dir + 'topology.txt', grid_res)
+
+    # print('Loaded the work zone topology.')
+    # print('-- time_grid: {0}'.format(time_grid))
+    # print('-- space_grid: {0}'.format(space_grid))
 
     # ========================================================================
     # Generate the true state for all simulation scenarios and seeds
@@ -72,34 +77,37 @@ def main(argv):
                 print('\nTrue state for sce {0} seed {1} previousely genereated'.format(sce, seed))
                 generated_truestates[sce].append(seed)
 
-                # plot the generated true speed
-                title = 'true speed sce {0} seed {1}'.format(sce, seed)
-                true_speed_file = get_file_name('truestate_prefix', sce, seed, grid=grid_res) + '_speed.txt'
-                plot_true_speed_for_rep(true_speed_file, unit='imperial', limit=[0, 80], title=title, save_fig=True)
+                if plot_all:
+                    # plot the generated true speed
+                    title = 'true speed sce {0} seed {1}'.format(sce, seed)
+                    true_speed_file = get_file_name('truestate_prefix', sce, seed, grid=grid_res) + '_speed.txt'
+                    plot_true_speed_for_rep(true_speed_file, unit='imperial', limit=[0, 80], title=title, save_fig=True)
 
-                # plot the generated true density
-                title = 'true density sce {0} seed {1}'.format(sce, seed)
-                true_density_file = get_file_name('truestate_prefix', sce, seed, grid=grid_res) + '_density.txt'
-                plot_true_density_for_rep(true_density_file, unit='imperial', limit=[0, 644], title=title, save_fig=True)
+                    # plot the generated true density
+                    title = 'true density sce {0} seed {1}'.format(sce, seed)
+                    true_density_file = get_file_name('truestate_prefix', sce, seed, grid=grid_res) + '_density.txt'
+                    plot_true_density_for_rep(true_density_file, unit='imperial', limit=[0, 644], title=title, save_fig=True)
 
                 continue
-
-            # ==================================================
-            # generate true state for this scenario and seed
-            while not exists(get_file_name('simdone', sce, seed)):
-                print('AIMSUN simulation for sce {0} seed {1} has not finished...'.format(sce, seed))
-                time.sleep(10)
 
             # ==================================================
             # convert sqlite to trajectory data
             print('\nGenerating true state for for sce {0} seed {1} ...'.format(sce, seed))
             if not exists(get_file_name('traj_data',sce, seed)):
+
+                # ==================================================
+                # generate true state for this scenario and seed
+                while not exists(get_file_name('simdone', sce, seed)):
+                    print('AIMSUN simulation for sce {0} seed {1} has not finished...'.format(sce, seed))
+                    time.sleep(10)
+
                 extract_traj_to_csv(get_file_name('sqlite', sce, seed),
                                     get_file_name('traj_data', sce, seed))
 
             traj_file = get_file_name('traj_data', sce, seed)
+            veh_type_file = get_file_name('veh_type', sce, seed)
             # true states are saved in mph and veh/mile
-            truestate_generator.generate_true_states_data(grid_res, traj_file,
+            truestate_generator.generate_true_states_data(grid_res, traj_file, veh_type_file,
                                                           truestate_file_prefix)
 
             # ==================================================
@@ -141,7 +149,9 @@ def get_file_name(file_type, sce, seed, grid=(5, 178)):
             return folder_dir + 'traj_data\\sim_sce{0}_seed{1}.csv'.format(sce, seed)
         elif file_type == 'truestate_prefix':
             return folder_dir + 'true_states\\truestate_{2}s{3}m_sce{0}_seed{1}'.format(sce, seed,
-                                                                                         grid[0], int(grid[1]))
+                                                                                    grid[0], int(grid[1]))
+        elif file_type == 'veh_type':
+            return folder_dir + 'traj_data\\sim_sce{0}_seed{1}_vehtype.csv'.format(sce, seed)
         else:
             raise Exception('Unrecognized file type for naming.')
 
@@ -155,6 +165,8 @@ def get_file_name(file_type, sce, seed, grid=(5, 178)):
         elif file_type == 'truestate_prefix':
             return folder_dir + 'true_states/truestate_{2}s{3}m_sce{0}_seed{1}'.format(sce, seed,
                                                                                         grid[0], int(grid[1]))
+        elif file_type == 'veh_type':
+            return folder_dir + 'traj_data/sim_sce{0}_seed{1}_vehtype.csv'.format(sce, seed)
         else:
             raise Exception('Unrecognized file type for naming.')
 
@@ -267,7 +279,7 @@ def load_workzone(topo_file, grid_res):
 
 
 def plot_true_speed_for_rep(file_name, unit='imperial', limit=(0, 40), title=None,
-                            save_fig=True):
+                            save_fig=True, fig_size=(18,8), fontsize=(36,34,32)):
     """
     This function plots the true speed profile in the specified unit
     :param file_name: the true speed data in mph.
@@ -292,7 +304,7 @@ def plot_true_speed_for_rep(file_name, unit='imperial', limit=(0, 40), title=Non
     else:
         raise Exception('Error: Unrecognized unit for plotting speed.')
 
-    fig = plt.figure(figsize=(18, 8), dpi=100)
+    fig = plt.figure(figsize=fig_size, dpi=100)
     ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
     im = ax.imshow(speed, cmap=plt.get_cmap('jet_r'),
                    interpolation='nearest',
@@ -300,9 +312,11 @@ def plot_true_speed_for_rep(file_name, unit='imperial', limit=(0, 40), title=Non
                    vmin=limit[0], vmax=limit[1])
     ax.autoscale(False)
 
-    ax.set_title('{0} ({1})'.format(title, unit_str))
-    plt.xlabel('Time')
+    ax.set_title('{0} ({1})'.format(title, unit_str), fontsize=fontsize[0])
+
+    plt.xlabel('Time', fontsize=fontsize[1])
     plt.ylabel('Space, traffic direction $\mathbf{\Rightarrow}$')
+
     cax = fig.add_axes([0.95, 0.25, 0.01, 0.5])
     fig.colorbar(im, cax=cax, orientation='vertical')
     if save_fig is True:

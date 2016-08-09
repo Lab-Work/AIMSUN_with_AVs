@@ -1,6 +1,6 @@
 # this file saves the work zone topology information
 # all length are in meters
-loc_start_end:50.0,4878.2
+loc_start_end:50.0,4883.0
 time_start_dur_step:0,3600,0.2
 fwy_sec_order:329,457,456
 replications:1377

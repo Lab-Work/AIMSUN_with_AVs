@@ -50,14 +50,18 @@ def main(argv):
 
     # ============================================================
     # calibrate the second order FDs
-    fd_2nd_pav_list = [[0.0, 0.0], [0.07, 0.13], [0.17, 0.23],
-                       [0.27, 0.33], [0.37, 0.43], [0.47, 0.53],
-                       [0.57, 0.63], [0.67, 0.73], [0.77, 0.83],
-                       [0.87, 0.93], [1.0, 1.0],]
     # fd_2nd_freeflow_thres = [40, 40, 40, 40, 40, 40,
     #                          40, 40, 45, 45, 45]
-    fd_2nd_freeflow_thres = [40, 40, 40, 40, 40, 40,
-                             40, 40, 40, 40, 40]
+    # fd_2nd_pav_list = [[0.0, 0.0], [0.07, 0.13], [0.17, 0.23],
+    #                    [0.27, 0.33], [0.37, 0.43], [0.47, 0.53],
+    #                    [0.57, 0.63], [0.67, 0.73], [0.77, 0.83],
+    #                    [0.87, 0.93], [1.0, 1.0]]
+    # fd_2nd_freeflow_thres = [40, 40, 40, 40, 40, 40,
+    #                          40, 40, 40, 40, 40]
+    fd_2nd_freeflow_thres = [40, 40]
+    fd_2nd_pav_list = [[0.22, 0.28], [0.72, 0.78]]
+
+
     preset_vm_beta = None
     rho_max = 644  # veh/mile
     preset_vm_beta = calibrate_NC_QLFD(file_list, fd_2nd_pav_list,
@@ -66,11 +70,14 @@ def main(argv):
 
     # ============================================================
     # calibrate the first order FDs
-    fd_1st_pav_list = [[0.0, 0.05], [0.0, 0.15], [0.0, 0.25], [0.0, 0.35], [0.0, 0.45],
-                       [0.0, 0.55], [0.0, 0.65], [0.0, 0.75], [0.0, 0.85], [0.0, 0.95]]
-    fd_1st_freeflow_thres = [40, 40, 40, 40, 40, 40, 40, 40, 40, 40]
-    calibrate_NC_QLFD(file_list, fd_1st_pav_list, fd_1st_freeflow_thres,
-                      rho_max, preset_vm_beta, save_fig=True, order='first')
+    if True:
+        # fd_1st_pav_list = [[0.0, 0.05], [0.0, 0.15], [0.0, 0.25], [0.0, 0.35], [0.0, 0.45],
+        #                    [0.0, 0.55], [0.0, 0.65], [0.0, 0.75], [0.0, 0.85], [0.0, 0.95]]
+        fd_1st_freeflow_thres = [40, 40, 40, 40, 40, 40, 40, 40, 40, 40]
+        fd_1st_pav_list = [[0.0, 0.0], [0.0, 0.5], [0.0, 1.0]]
+        fd_1st_freeflow_thres = [40, 40, 40]
+        calibrate_NC_QLFD(file_list, fd_1st_pav_list, fd_1st_freeflow_thres,
+                          rho_max, preset_vm_beta, save_fig=True, order='first')
 
 
 def load_configuration(file_name):

@@ -37,6 +37,6 @@ experiment_id:1307
 # ===========================================
 # resolution for generating the true states
 # length of road in meters, dt in seconds
-hwy_length:4828.2
+hwy_length:4833
 num_cells:27
 dt:5
