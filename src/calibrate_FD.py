@@ -52,16 +52,19 @@ def main(argv):
     # calibrate the second order FDs
     # fd_2nd_freeflow_thres = [40, 40, 40, 40, 40, 40,
     #                          40, 40, 45, 45, 45]
-    # fd_2nd_pav_list = [[0.0, 0.0], [0.07, 0.13], [0.17, 0.23],
-    #                    [0.27, 0.33], [0.37, 0.43], [0.47, 0.53],
-    #                    [0.57, 0.63], [0.67, 0.73], [0.77, 0.83],
-    #                    [0.87, 0.93], [1.0, 1.0]]
-    # fd_2nd_freeflow_thres = [40, 40, 40, 40, 40, 40,
-    #                          40, 40, 40, 40, 40]
-    fd_2nd_freeflow_thres = [40, 40]
-    fd_2nd_pav_list = [[0.22, 0.28], [0.72, 0.78]]
+    fd_2nd_pav_list = [[0.0, 0.0], [0.07, 0.13], [0.17, 0.23], [0.22, 0.28],
+                       [0.27, 0.33], [0.37, 0.43], [0.47, 0.53],
+                       [0.57, 0.63], [0.67, 0.73], [0.72, 0.78], [0.77, 0.83],
+                       [0.87, 0.93], [1.0, 1.0]]
+    fd_2nd_freeflow_thres = [40, 40, 40, 40, 
+                             40, 40, 40,
+                             40, 40, 40, 40, 
+                             40, 40]
+    # fd_2nd_freeflow_thres = [40, 40]
+    # fd_2nd_pav_list = [[0.22, 0.28], [0.72, 0.78]]
 
 
+    # preset_vm_beta = [76.28, 600]
     preset_vm_beta = None
     rho_max = 644  # veh/mile
     preset_vm_beta = calibrate_NC_QLFD(file_list, fd_2nd_pav_list,
@@ -71,11 +74,14 @@ def main(argv):
     # ============================================================
     # calibrate the first order FDs
     if True:
-        # fd_1st_pav_list = [[0.0, 0.05], [0.0, 0.15], [0.0, 0.25], [0.0, 0.35], [0.0, 0.45],
-        #                    [0.0, 0.55], [0.0, 0.65], [0.0, 0.75], [0.0, 0.85], [0.0, 0.95]]
-        fd_1st_freeflow_thres = [40, 40, 40, 40, 40, 40, 40, 40, 40, 40]
-        fd_1st_pav_list = [[0.0, 0.0], [0.0, 0.5], [0.0, 1.0]]
-        fd_1st_freeflow_thres = [40, 40, 40]
+        fd_1st_pav_list = [[0.0, 0.0], [0.0, 0.05], [0.0, 0.15], [0.0, 0.25], [0.0, 0.35], 
+                           [0.0, 0.45], [0.0, 0.5], [0.0, 0.55], [0.0, 0.65], [0.0, 0.75], 
+                           [0.0, 0.85], [0.0, 0.95], [0.0, 1.0]]
+        fd_1st_freeflow_thres = [40, 40, 40, 40, 40, 
+                                 40, 40, 40, 40, 40, 
+                                 40, 40, 40]
+        # fd_1st_pav_list = [[0.0, 0.0], [0.0, 0.5], [0.0, 1.0]]
+        # fd_1st_freeflow_thres = [40, 40, 40]
         calibrate_NC_QLFD(file_list, fd_1st_pav_list, fd_1st_freeflow_thres,
                           rho_max, preset_vm_beta, save_fig=True, order='first')
 
@@ -195,56 +201,61 @@ def calibrate_NC_QLFD(cleaned_data_files, pAV_ranges, freeflow_thres,
     # -------------------------------------------------
     # Step 1: If second order, fit the quadratic curve
     # -------------------------------------------------
-    if order == 'second':
-        # Get all free flow data points in the ranges to fit the collapsed quadratic curve for the second order model
-        # get the data at all ranges.
-        print('\nCalibrating collapsed freeflow curve for second order model:')
-        all_ff_data = []
-        num_points = []
-        for i, p in enumerate(pAV_ranges):
-            ffInRange = ((data[:, 0] >= p[0]) & (data[:, 0] <= p[1]) & (data[:, 2] >= freeflow_thres[i]))
-            print('--- Got {0} data point for {1} pAV'.format(sum(ffInRange), p))
-
-            num_points.append(sum(ffInRange))
-
-        # weight the free flow data by density bins
-        max_num_pts = np.max(num_points)
-        for i, p in enumerate(pAV_ranges):
-
-            ffInRange = ((data[:, 0] >= p[0]) & (data[:, 0] <= p[1]) & (data[:, 2] >= freeflow_thres[i]))
-            scale = np.round(max_num_pts / num_points[i])
-            print('--- pAV {0}: Scale {1} data point by {2} to {3} data points'.format(p, num_points[i], scale,
-                                                                                   scale * num_points[i]))
-            for s in range(0, scale):
-                if all_ff_data == []:
-                    all_ff_data = data[ffInRange, :]
-                else:
-                    all_ff_data = np.vstack([all_ff_data, data[ffInRange, :]])
-
-        all_ff_pAV = all_ff_data[:, 0]
-        all_ff_flow = all_ff_data[:, 1]
-        all_ff_speed = all_ff_data[:, 2]
-        all_ff_density = all_ff_flow / all_ff_speed
-
-        # now fit a quadratic function with intercepts at origin and has related coefficient
-        # the quadratic function:
-        # q = (v_m^2 - 2wv_m)/(4wrho_m)*rho^2 + v_m*rho
-        beta_preset = 600
-        # funcQuadFit = lambda vm_beta, rho: vm_beta[0] * rho - np.power(rho, 2) * vm_beta[0] / vm_beta[1]
-        funcQuadFit = lambda vm_beta, rho: vm_beta[0] * rho - np.power(rho, 2) * vm_beta[0] / beta_preset
-        funErr = lambda vm_beta, rho, q: funcQuadFit(vm_beta, rho) - q
-        vm_beta_init = [80, 600]  # initial guess of vm is 60
-
-        vm_beta_est, success = optimize.leastsq(funErr, vm_beta_init, args=(all_ff_density, all_ff_flow))
-
-        all_vm = vm_beta_est[0]
-        all_beta = beta_preset
-        # all_beta = vm_beta_est[1]
-
-    else:
-        # For first order model, use the preset value
+    if preset_vm_beta is not None:
+        # for both first order and second order model, if there is preset vm and beta, then use preset
         all_vm = preset_vm_beta[0]
         all_beta = preset_vm_beta[1]
+
+    else:
+        # otherwise, need to refit all vm and beta while calibrating the second order model.
+        if order == 'second':
+            # Get all free flow data points in the ranges to fit the collapsed quadratic curve for the second order model
+            # get the data at all ranges.
+            print('\nCalibrating collapsed freeflow curve for second order model:')
+            all_ff_data = []
+            num_points = []
+            for i, p in enumerate(pAV_ranges):
+                ffInRange = ((data[:, 0] >= p[0]) & (data[:, 0] <= p[1]) & (data[:, 2] >= freeflow_thres[i]))
+                print('--- Got {0} data point for {1} pAV'.format(sum(ffInRange), p))
+
+                num_points.append(sum(ffInRange))
+
+            # weight the free flow data by density bins
+            max_num_pts = np.max(num_points)
+            for i, p in enumerate(pAV_ranges):
+
+                ffInRange = ((data[:, 0] >= p[0]) & (data[:, 0] <= p[1]) & (data[:, 2] >= freeflow_thres[i]))
+                scale = np.round(max_num_pts / num_points[i])
+                print('--- pAV {0}: Scale {1} data point by {2} to {3} data points'.format(p, num_points[i], scale,
+                                                                                       scale * num_points[i]))
+                for s in range(0, scale):
+                    if all_ff_data == []:
+                        all_ff_data = data[ffInRange, :]
+                    else:
+                        all_ff_data = np.vstack([all_ff_data, data[ffInRange, :]])
+
+            all_ff_pAV = all_ff_data[:, 0]
+            all_ff_flow = all_ff_data[:, 1]
+            all_ff_speed = all_ff_data[:, 2]
+            all_ff_density = all_ff_flow / all_ff_speed
+
+            # now fit a quadratic function with intercepts at origin and has related coefficient
+            # the quadratic function:
+            # q = (v_m^2 - 2wv_m)/(4wrho_m)*rho^2 + v_m*rho
+            beta_preset = 600
+            # funcQuadFit = lambda vm_beta, rho: vm_beta[0] * rho - np.power(rho, 2) * vm_beta[0] / vm_beta[1]
+            funcQuadFit = lambda vm_beta, rho: vm_beta[0] * rho - np.power(rho, 2) * vm_beta[0] / beta_preset
+            funErr = lambda vm_beta, rho, q: funcQuadFit(vm_beta, rho) - q
+            vm_beta_init = [80, 600]  # initial guess of vm is 60
+
+            vm_beta_est, success = optimize.leastsq(funErr, vm_beta_init, args=(all_ff_density, all_ff_flow))
+
+            all_vm = vm_beta_est[0]
+            all_beta = beta_preset
+            # all_beta = vm_beta_est[1]
+        else:
+            raise Exception('Please calibrate second order FD first to get vm and beta')
+        
 
     # -------------------------------------------------
     # Step 1: Fit congested part and find the maximum flow for each penetration rate
