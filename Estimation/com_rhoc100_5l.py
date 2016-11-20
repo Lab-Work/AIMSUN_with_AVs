@@ -22,7 +22,7 @@ import sys
 def main(argv):
     PRsetTest = [0, 25, 50, 75, 100]
     # seed 24232 seems to be a bad simulation where the queue extended beyonded the entrance
-    sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230] 
+    sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
     # sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24654, 45234, 59230]
     # sensorLocationSeed = [24232]    #24654
     colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'darkblue', 'purple', 'hotpink']
@@ -42,10 +42,10 @@ def main(argv):
 
     directoryLoadData = os.getcwd() + '/DATA/'
     # directoryLoadPred = os.getcwd() + '/Result/Prediction/'
-    directoryLoadPrefix = os.getcwd() + '/Result/FD_sensitivity_analysis/Estimation_corrected_1st_rhoc25_5l_'
-    directoryLoad = os.getcwd() + '/Result/FD_sensitivity_analysis/Estimation_corrected_1st_rhoc75_5h_0/'
-    directorySave = os.getcwd() + '/Result/FD_sensitivity_analysis/Estimation_corrected_1st_rhoc75_5h_0/'
-    savename = '0_1st_rhoc75_5h_'
+    directoryLoadPrefix = os.getcwd() + '/Result/Estimation_corrected_1st_rhoc100_5l_'
+    directoryLoad = os.getcwd() + '/Result/Estimation_corrected_1st_rhoc100_5l/'
+    directorySave = os.getcwd() + '/Result/Estimation_corrected_1st_rhoc100_5l/'
+    savename = '0_1st_rhoc100_5l_'
 
     if not exists(directorySave):
         os.makedirs(directorySave)
