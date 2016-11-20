@@ -42,10 +42,9 @@ def main(argv):
 
     directoryLoadData = os.getcwd() + '/DATA/'
     # directoryLoadPred = os.getcwd() + '/Result/Prediction/'
-    directoryLoadPrefix = os.getcwd() + '/Result/FD_sensitivity_analysis/Estimation_corrected_1st_rhoc75_5l_'
-
-    directorySave = os.getcwd() + '/Result/FD_sensitivity_analysis/Estimation_corrected_1st_rhoc75_5l_0/'
-    savename = '0_1st_rhoc75_5l_'
+    directoryLoadPrefix = os.getcwd() + '/Result/Estimation_corrected_1st_rhoc25_5l_'
+    directorySave = os.getcwd() + '/Result/Estimation_corrected_1st_rhoc25_5l_0/'
+    savename = '0_1st_rhoc25_5l_'
 
     if not exists(directorySave):
         os.makedirs(directorySave)
