@@ -2,7 +2,8 @@ import os
 import sys
 import time
 from os.path import exists
-
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from numpy import *
 
@@ -326,10 +327,11 @@ rhoc_80 = 151.56
 rhoc_90 = 183.24
 rhoc_99 = 214.06
 rhoc_100 = 214.06
-rhom_all = 644
+
+rhom_all = 644 # 612 (-5%); 644; 676(+5%)
 # rhom_all = 460
 
-vmax_all = 72.47    # 72.47 (-5%); 80.1 (+5%)
+vmax_all = 76.28    # 72.47 (-5%); 80.1 (+5%)
 
 beta = 600
 
@@ -337,19 +339,19 @@ fdpNB = rhoc_0, rhoc_10, rhoc_20, rhoc_30, rhoc_40, rhoc_50, rhoc_60, \
         rhoc_70, rhoc_80, rhoc_90, rhoc_100, rhom_all, vmax_all, beta,
 
 # 1st model parameters
-rhoc_0 = 71.14  # update   71.13;  old 71.98
+rhoc_0 = 71.14  # 71.14; 74.7 (+5%);  update   71.13;  old 71.98
 rhoc_5 = 71.98
 rhoc_15 = 73.97
-rhoc_25 = 76.76
+rhoc_25 = 76.76  # 72.92 (-5%); 76.76; 80.60 (+5%)
 rhoc_35 = 79.87
 rhoc_45 = 82.91
-rhoc_50 = 84.29  # update   84.29 ; old 83.5
+rhoc_50 = 84.29  # 80.08 (-5%); 84.29; 88.5 (+5%);  updated 84.29 ; old 83.5
 rhoc_55 = 85.38
 rhoc_65 = 88.81
 rhoc_75 = 92.94
 rhoc_85 = 98.28
 rhoc_95 = 105.8
-rhoc_100 = 119.49  # update    119.49 ; old 105.8
+rhoc_100 = 119.46  #113.52 (-5%); 119.49; 125.46 (+5%);  update    119.49 ; old 105.8
 
 rhoc1st = rhoc_0, rhoc_5, rhoc_15, rhoc_25, rhoc_35, rhoc_45, \
           rhoc_50, rhoc_55, rhoc_65, rhoc_75, rhoc_85, rhoc_95, rhoc_100
@@ -358,10 +360,10 @@ rhoc1st = rhoc_0, rhoc_5, rhoc_15, rhoc_25, rhoc_35, rhoc_45, \
 # set the number of samples and test sets
 # for one replication: 50:5 min; 100: 8 min; 500: 43 min; 1000: 86 min
 # samples = [50, 100, 500, 1000]  # one set takes 2.75 hr
-samples = [1000]  # one set takes 2.75 hr
-# sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
+samples = [500]  # one set takes 2.75 hr
+sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
 # sensorLocationSeed = [1355, 2143, 3252, 8763, 12424]
-sensorLocationSeed = [23424, 24232, 24654, 45234, 59230]
+# sensorLocationSeed = [23424, 24232, 24654, 45234, 59230]
 # sensorLocationSeed = [24654]
 
 # =============================================
@@ -372,7 +374,7 @@ for sample in samples:
     for i in range(0, 1):
         # only run one time
 
-        directorySave = os.getcwd() + '/Result/Estimation_corrected_vm_5l/'
+        directorySave = os.getcwd() + '/Result/Estimation_corrected_10/'
 
         if not exists(directorySave):
             os.makedirs(directorySave)
