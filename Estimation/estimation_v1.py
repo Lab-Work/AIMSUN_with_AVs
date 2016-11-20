@@ -311,25 +311,28 @@ def run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorL
 ###############################################################################################################
 ## fd parameters
 ## 2nd model parameters
-rhoc_0 = 71.14
-rhoc_1 = 71.14
-rhoc_10 = 76.27
-rhoc_20 = 83.77
-rhoc_25 = 86.57  # update    86.57; old 86
-rhoc_30 = 91.23
-rhoc_40 = 97.53
-rhoc_50 = 107.63
-rhoc_60 = 116.85
-rhoc_70 = 134.65
-rhoc_75 = 145.63  # update   145.63; old 142
-rhoc_80 = 151.56
-rhoc_90 = 183.24
-rhoc_99 = 214.06
-rhoc_100 = 214.06
+# rhoc_25: updated 86.57; old 86
+# rhoc_75: updated 145.63; old 142
+rhoc_0 = 71.14       # 67.58 (-5%); 71.14; 74.70 (+5%)
+rhoc_1 = 74.70       # 67.58 (-5%); 71.14; 74.70 (+5%)
+rhoc_10 = 80.08       # 72.46 (-5%); 76.27; 80.08 (+5%)
+rhoc_20 = 87.96       # 79.58 (-5%); 83.77; 87.96 (+5%)
+rhoc_25 = 90.90       # 82.24 (-5%); 86.57; 90.90 (+5%)
+rhoc_30 = 95.79       # 86.67 (-5%); 91.23; 95.79 (+5%)
+rhoc_40 = 102.41       # 92.65 (-5%); 97.53; 102.41 (+5%)
+rhoc_50 = 113.01       # 102.25 (-5%); 107.63; 113.01 (+5%)
+rhoc_60 = 122.69       # 111.01 (-5%); 116.85; 122.69 (+5%)
+rhoc_70 = 141.38       # 127.92 (-5%); 134.65; 141.38 (+5%)
+rhoc_75 = 152.91       # 138.35 (-5%); 145.63; 152.91 (+5%)
+rhoc_80 = 159.14       # 143.98 (-5%); 151.56; 159.14 (+5%)
+rhoc_90 = 192.40       # 174.08 (-5%); 183.24; 192.40 (+5%)
+rhoc_99 = 224.76       # 203.36 (-5%); 214.06; 224.76 (+5%)
+rhoc_100 = 224.76       # 203.36 (-5%); 214.06; 224.76 (+5%)
+
 rhom_all = 644
 # rhom_all = 460
 
-vmax_all = 72.47    # 72.47 (-5%); 80.1 (+5%)
+vmax_all = 76.28   # 72.47 (-5%); 76.28;  80.1 (+5%)
 
 beta = 600
 
@@ -343,13 +346,13 @@ rhoc_15 = 73.97
 rhoc_25 = 76.76
 rhoc_35 = 79.87
 rhoc_45 = 82.91
-rhoc_50 = 84.29  # update   84.29 ; old 83.5
+rhoc_50 = 84.29  # update   84.29 ; old 83.5 ;
 rhoc_55 = 85.38
 rhoc_65 = 88.81
-rhoc_75 = 92.94
+rhoc_75 = 92.94         # 88.3 (-5%); 92.94; 97.59 (+5%)
 rhoc_85 = 98.28
 rhoc_95 = 105.8
-rhoc_100 = 119.49  # update    119.49 ; old 105.8
+rhoc_100 = 119.49  # update    119.49 ; old 105.8;   113.52 (-5%), 125.47 (+5%)
 
 rhoc1st = rhoc_0, rhoc_5, rhoc_15, rhoc_25, rhoc_35, rhoc_45, \
           rhoc_50, rhoc_55, rhoc_65, rhoc_75, rhoc_85, rhoc_95, rhoc_100
@@ -358,10 +361,10 @@ rhoc1st = rhoc_0, rhoc_5, rhoc_15, rhoc_25, rhoc_35, rhoc_45, \
 # set the number of samples and test sets
 # for one replication: 50:5 min; 100: 8 min; 500: 43 min; 1000: 86 min
 # samples = [50, 100, 500, 1000]  # one set takes 2.75 hr
-samples = [1000]  # one set takes 2.75 hr
-# sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
+samples = [500]  # one set takes 2.75 hr
+sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
 # sensorLocationSeed = [1355, 2143, 3252, 8763, 12424]
-sensorLocationSeed = [23424, 24232, 24654, 45234, 59230]
+# sensorLocationSeed = [23424, 24232, 24654, 45234, 59230]
 # sensorLocationSeed = [24654]
 
 # =============================================
@@ -372,7 +375,7 @@ for sample in samples:
     for i in range(0, 1):
         # only run one time
 
-        directorySave = os.getcwd() + '/Result/Estimation_corrected_vm_5l/'
+        directorySave = os.getcwd() + '/Result/Estimation_corrected_2nd_5h/'
 
         if not exists(directorySave):
             os.makedirs(directorySave)
@@ -389,7 +392,6 @@ for sample in samples:
 
         #        plot_density(estimatedState, False, 'state'+marker, directorySave)
         #        plot_density(densityTrue, False, 'state'+marker, directorySave)
-
 
         #
         #        print 'running time is:', end_time-start_time
