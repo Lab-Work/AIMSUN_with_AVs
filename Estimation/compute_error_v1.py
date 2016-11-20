@@ -22,14 +22,15 @@ import sys
 def main(argv):
     PRsetTest = [0, 25, 50, 75, 100]
     # seed 24232 seems to be a bad simulation where the queue extended beyonded the entrance
-    # sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230] 
-    sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24654, 45234, 59230]
+    sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230] 
+    # sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24654, 45234, 59230]
     # sensorLocationSeed = [24232]    #24654
-    # colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'darkblue', 'purple', 'hotpink']
-    colors = ['b', 'g', 'r', 'c', 'm', 'y', 'darkblue', 'purple', 'hotpink']
+    colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'darkblue', 'purple', 'hotpink']
+    # colors = ['b', 'g', 'r', 'c', 'm', 'y', 'darkblue', 'purple', 'hotpink']
+    seed_id = 0
     # the runs of the particle filter
-    runs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    # runs = [3]
+    # runs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    runs = [0]
 
     # the maximum rhoc at differnet scenarios
     max_rhoc = OrderedDict()
@@ -41,10 +42,10 @@ def main(argv):
 
     directoryLoadData = os.getcwd() + '/DATA/'
     # directoryLoadPred = os.getcwd() + '/Result/Prediction/'
-    directoryLoadPrefix = os.getcwd() + '/Result/Estimation_corrected_'
+    directoryLoadPrefix = os.getcwd() + '/Result/FD_sensitivity_analysis/Estimation_corrected_1st_rhoc75_5l_'
 
-    directorySave = os.getcwd() + '/Result/Estimation_corrected_figs/'
-    # savename = 'err_corrected_'
+    directorySave = os.getcwd() + '/Result/FD_sensitivity_analysis/Estimation_corrected_1st_rhoc75_5l_0/'
+    savename = '0_1st_rhoc75_5l_'
 
     if not exists(directorySave):
         os.makedirs(directorySave)
@@ -72,20 +73,20 @@ def main(argv):
 
     # ==============================================================================
     # plot the average error for one seed with different runs
-    # scatter_runs_err(directorySave, PRsetTest, runs,
-    #                  error_array_1st_all, seed_id, '1st model',
-    #                  error_array_2nd_all, seed_id, '2nd model',
-    #                  colors, 'Average error with different runs', savename+'err_all')
-    #
-    # scatter_runs_err(directorySave, PRsetTest, runs,
-    #                  error_array_1st_ff, seed_id, '1st free flow',
-    #                  error_array_2nd_ff, seed_id, '2nd free flow',
-    #                  colors, 'Average error with different runs in free flow', savename+'err_ff')
-    #
-    # scatter_runs_err(directorySave, PRsetTest, runs,
-    #                  error_array_1st_cf, seed_id, '1st congested flow',
-    #                  error_array_2nd_cf, seed_id, '2nd congested flow',
-    #                  colors, 'Average error with different runs in congested flow', savename+'err_cf')
+    scatter_runs_err(directorySave, PRsetTest, runs,
+                     error_array_1st_all, seed_id, '1st model',
+                     error_array_2nd_all, seed_id, '2nd model',
+                     colors, 'Average error with different runs', savename+'err_all')
+
+    scatter_runs_err(directorySave, PRsetTest, runs,
+                     error_array_1st_ff, seed_id, '1st free flow',
+                     error_array_2nd_ff, seed_id, '2nd free flow',
+                     colors, 'Average error with different runs in free flow', savename+'err_ff')
+
+    scatter_runs_err(directorySave, PRsetTest, runs,
+                     error_array_1st_cf, seed_id, '1st congested flow',
+                     error_array_2nd_cf, seed_id, '2nd congested flow',
+                     colors, 'Average error with different runs in congested flow', savename+'err_cf')
 
     # ==============================================================================
     perc_improv_all, perc_improv_ff, perc_improv_cf = \
@@ -93,34 +94,34 @@ def main(argv):
                             error_array_1st_all, error_array_1st_ff, error_array_1st_cf,
                             error_array_2nd_all, error_array_2nd_ff, error_array_2nd_cf)
     #
-    # scatter_seeds_perc_improve(directorySave, PRsetTest, sensorLocationSeed,
-    #                            perc_improv_all, 0, colors, 'Improvemnt of 2nd over 1st', savename+'err_perc_all')
-    #
-    # scatter_seeds_perc_improve(directorySave, PRsetTest, sensorLocationSeed,
-    #                            perc_improv_ff, 0, colors, 'Improvemnt of 2nd over 1st in free flow', savename+'err_perc_ff')
-    #
-    # scatter_seeds_perc_improve(directorySave, PRsetTest, sensorLocationSeed,
-    #                            perc_improv_cf, 0, colors, 'Improvemnt of 2nd over 1st in congested flow', savename+'err_perc_cf')
+    scatter_seeds_perc_improve(directorySave, PRsetTest, sensorLocationSeed,
+                               perc_improv_all, 0, colors, 'Improvemnt of 2nd over 1st', savename+'err_perc_all')
+
+    scatter_seeds_perc_improve(directorySave, PRsetTest, sensorLocationSeed,
+                               perc_improv_ff, 0, colors, 'Improvemnt of 2nd over 1st in free flow', savename+'err_perc_ff')
+
+    scatter_seeds_perc_improve(directorySave, PRsetTest, sensorLocationSeed,
+                               perc_improv_cf, 0, colors, 'Improvemnt of 2nd over 1st in congested flow', savename+'err_perc_cf')
 
     # ==============================================================================
     # plot multiple seeds with multiple runs
-    scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
-                error_array_1st_all, '1st model',
-                error_array_2nd_all, '2nd model', colors, 'Mean estimation error', 'err_summary_all')
-    scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
-                error_array_1st_ff, '1st free flow',
-                error_array_2nd_ff, '2nd free flow', colors, 'Mean estimation error in free flow', 'err_summary_ff')
-    scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
-                error_array_1st_cf, '1st congested flow',
-                error_array_2nd_cf, '2nd congested flow', colors, 'Mean estimation error in congested flow', 'err_summary_cf')
+    # scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
+    #             error_array_1st_all, '1st model',
+    #             error_array_2nd_all, '2nd model', colors, 'Mean estimation error', 'err_summary_all')
+    # scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
+    #             error_array_1st_ff, '1st free flow',
+    #             error_array_2nd_ff, '2nd free flow', colors, 'Mean estimation error in free flow', 'err_summary_ff')
+    # scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
+    #             error_array_1st_cf, '1st congested flow',
+    #             error_array_2nd_cf, '2nd congested flow', colors, 'Mean estimation error in congested flow', 'err_summary_cf')
 
     # plot the percent improvement
-    scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs, perc_improv_all, colors,
-                         'Improvement of 2nd over 1st', 'err_summary_perc_all')
-    scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs, perc_improv_ff, colors,
-                         'Improvement of 2nd over 1st in free flow', 'err_summary_perc_ff')
-    scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs, perc_improv_cf, colors,
-                         'Improvement of 2nd over 1st in congested flow', 'err_summary_perc_cf')
+    # scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs, perc_improv_all, colors,
+    #                      'Improvement of 2nd over 1st', 'err_summary_perc_all')
+    # scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs, perc_improv_ff, colors,
+    #                      'Improvement of 2nd over 1st in free flow', 'err_summary_perc_ff')
+    # scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs, perc_improv_cf, colors,
+    #                      'Improvement of 2nd over 1st in congested flow', 'err_summary_perc_cf')
 
 
 # ========================================================================================================================
