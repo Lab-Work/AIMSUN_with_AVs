@@ -43,6 +43,7 @@ def main(argv):
     directoryLoadData = os.getcwd() + '/DATA/'
     # directoryLoadPred = os.getcwd() + '/Result/Prediction/'
     directoryLoadPrefix = os.getcwd() + '/Result/Estimation_corrected_1st_rhoc25_5l_'
+    directoryLoad = os.getcwd() + '/Result/Estimation_corrected_1st_rhoc25_5l_0'
     directorySave = os.getcwd() + '/Result/Estimation_corrected_1st_rhoc25_5l_0/'
     savename = '0_1st_rhoc25_5l_'
 
@@ -51,7 +52,7 @@ def main(argv):
 
     # compute all the errors
     error_array_1st_all, error_array_1st_ff, error_array_1st_cf, error_array_2nd_all, error_array_2nd_ff, error_array_2nd_cf = \
-        compute_mae(directoryLoadData, directoryLoadPrefix, PRsetTest, sensorLocationSeed, runs, max_rhoc[0])
+        compute_mae(directoryLoadData, directoryLoad, directoryLoadPrefix, PRsetTest, sensorLocationSeed, runs, max_rhoc[0])
 
     # ==============================================================================
     # plot the average error for one run with seed scatters
@@ -126,7 +127,7 @@ def main(argv):
 # ========================================================================================================================
 # Compute the mean absolute error
 # ========================================================================================================================
-def compute_mae(directoryLoadData, directoryLoadPrefix, PRsetTest, sensorLocationSeed, runs, rhoc_thres):
+def compute_mae(directoryLoadData, directoryLoad, directoryLoadPrefix, PRsetTest, sensorLocationSeed, runs, rhoc_thres):
     """
     This function computes the mean absolute error.
     - return six 3d arrays: err_1st_all, err_1st_ff, err_1st_cf, err_2n_all, err_2n_ff, error_array_2nd_cf
@@ -147,7 +148,14 @@ def compute_mae(directoryLoadData, directoryLoadPrefix, PRsetTest, sensorLocatio
     # avg_2ndTR = []
     for counterRun, run in enumerate(runs):
         # for each run of the particle filter, find the correct folder
-        directoryLoadEst = directoryLoadPrefix + str(run) + '/'
+
+        # disable the folder selection if directory load is set
+        if directoryLoad is not None:
+            directoryLoadEst = directoryLoad
+        elif directoryLoadPrefix is not None:
+            directoryLoadEst = directoryLoadPrefix + str(run) + '/'
+        else:
+            raise Exception('Incorrect estimation data folder. Check directoryLoad')
 
         for counterPR, PR in enumerate(PRsetTest):
 
