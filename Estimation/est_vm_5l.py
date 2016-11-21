@@ -155,10 +155,11 @@ def generate_prRhocDict(PRset, rhoc1st):
 
 ###############################################################################################################
 
-def run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorLocationSeed):
+def run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorLocationSeed, PRsetTest):
     PRset = [0, 5, 15, 25, 35, 45, 50, 55, 65, 75, 85, 95, 100]
 
-    PRsetTest = [0, 25, 50, 75, 100]
+    # PRsetTest = [0, 25, 50, 75, 100]
+
 
     prRhocDict = generate_prRhocDict(PRset, rhoc1st)
 
@@ -241,7 +242,7 @@ def run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorL
                     #                if mod(k,100) == 0:
                     #                    print 'this is time step',k
                     ###############################################################################################################
-                    ## PF            
+                    ## PF
 
                     bdl = boundary[k, 0], boundary[k, 1]
                     bdr = boundary[k, 2], boundary[k, 3]
@@ -292,9 +293,9 @@ def run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorL
 
     errorStoreAveSeed = average(errorStore, axis=1)
 
-    #            
+    #
     # save(directorySave+'ErrorSummary', errorStore)
-    #            
+    #
     plt.rc('xtick', labelsize=20)
     plt.rc('ytick', labelsize=20)
     plt.plot(PRsetTest, errorStoreAveSeed[:, 0], color='b', label='1st model')
@@ -310,104 +311,108 @@ def run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorL
 
 
 ###############################################################################################################
-## fd parameters
-## 2nd model parameters
-# rhoc_25: updated 86.57; old 86
-# rhoc_75: updated 145.63; old 142
-rhoc_0 = 71.14       # 67.58 (-5%); 71.14; 74.70 (+5%)
-rhoc_1 = 71.14       # 67.58 (-5%); 71.14; 74.70 (+5%)
-rhoc_10 = 76.27       # 72.46 (-5%); 76.27; 80.08 (+5%)
-rhoc_20 = 83.77       # 79.58 (-5%); 83.77; 87.96 (+5%)
-rhoc_25 = 86.57       # 82.24 (-5%); 86.57; 90.90 (+5%)
-rhoc_30 = 91.23       # 86.67 (-5%); 91.23; 95.79 (+5%)
-rhoc_40 = 97.53       # 92.65 (-5%); 97.53; 102.41 (+5%)
-rhoc_50 = 107.63       # 102.25 (-5%); 107.63; 113.01 (+5%)
-rhoc_60 = 116.85       # 111.01 (-5%); 116.85; 122.69 (+5%)
-rhoc_70 = 134.65       # 127.92 (-5%); 134.65; 141.38 (+5%)
-rhoc_75 = 145.63       # 138.35 (-5%); 145.63; 152.91 (+5%)
-rhoc_80 = 151.56       # 143.98 (-5%); 151.56; 159.14 (+5%)
-rhoc_90 = 183.24       # 174.08 (-5%); 183.24; 192.40 (+5%)
-rhoc_99 = 214.06       # 203.36 (-5%); 214.06; 224.76 (+5%)
-rhoc_100 = 214.06       # 203.36 (-5%); 214.06; 224.76 (+5%)
+def main(argv):
+    ## fd parameters
+    ## 2nd model parameters
+    # rhoc_25: updated 86.57; old 86
+    # rhoc_75: updated 145.63; old 142
+    rhoc_0 = 71.14       # 67.58 (-5%); 71.14; 74.70 (+5%)
+    rhoc_1 = 71.14       # 67.58 (-5%); 71.14; 74.70 (+5%)
+    rhoc_10 = 76.27       # 72.46 (-5%); 76.27; 80.08 (+5%)
+    rhoc_20 = 83.77       # 79.58 (-5%); 83.77; 87.96 (+5%)
+    rhoc_25 = 86.57       # 82.24 (-5%); 86.57; 90.90 (+5%)
+    rhoc_30 = 91.23       # 86.67 (-5%); 91.23; 95.79 (+5%)
+    rhoc_40 = 97.53       # 92.65 (-5%); 97.53; 102.41 (+5%)
+    rhoc_50 = 107.63       # 102.25 (-5%); 107.63; 113.01 (+5%)
+    rhoc_60 = 116.85       # 111.01 (-5%); 116.85; 122.69 (+5%)
+    rhoc_70 = 134.65       # 127.92 (-5%); 134.65; 141.38 (+5%)
+    rhoc_75 = 145.63       # 138.35 (-5%); 145.63; 152.91 (+5%)
+    rhoc_80 = 151.56       # 143.98 (-5%); 151.56; 159.14 (+5%)
+    rhoc_90 = 183.24       # 174.08 (-5%); 183.24; 192.40 (+5%)
+    rhoc_99 = 214.06       # 203.36 (-5%); 214.06; 224.76 (+5%)
+    rhoc_100 = 214.06       # 203.36 (-5%); 214.06; 224.76 (+5%)
 
-rhom_all = 644
-# rhom_all = 460
+    rhom_all = 644
+    # rhom_all = 460
 
-vmax_all = 76.28   # 72.47 (-5%); 76.28;  80.1 (+5%)
+    vmax_all = 72.47   # 72.47 (-5%); 76.28;  80.1 (+5%)
 
-beta = 600
+    beta = 600
 
-fdpNB = rhoc_0, rhoc_10, rhoc_20, rhoc_30, rhoc_40, rhoc_50, rhoc_60, \
-        rhoc_70, rhoc_80, rhoc_90, rhoc_100, rhom_all, vmax_all, beta,
+    fdpNB = rhoc_0, rhoc_10, rhoc_20, rhoc_30, rhoc_40, rhoc_50, rhoc_60, \
+            rhoc_70, rhoc_80, rhoc_90, rhoc_100, rhom_all, vmax_all, beta,
 
-# 1st model parameters
-rhoc_0 = 71.14  # 71.14; 74.7 (+5%);  update   71.13;  old 71.98
-rhoc_5 = 71.98
-rhoc_15 = 73.97
-rhoc_25 = 76.76  # 72.92 (-5%); 76.76; 80.60 (+5%)
-rhoc_35 = 79.87
-rhoc_45 = 82.91
-rhoc_50 = 84.29  # 80.08 (-5%); 84.29; 88.5 (+5%);  updated 84.29 ; old 83.5
-rhoc_55 = 85.38
-rhoc_65 = 88.81
-rhoc_75 = 92.94         # 88.3 (-5%); 92.94; 97.59 (+5%)
-rhoc_85 = 98.28
-rhoc_95 = 105.8
-rhoc_100 = 119.46  #113.52 (-5%); 119.49; 125.46 (+5%);  update    119.49 ; old 105.8
+    # 1st model parameters
+    rhoc_0 = 71.14  # 71.14; 74.7 (+5%);  update   71.13;  old 71.98
+    rhoc_5 = 71.98
+    rhoc_15 = 73.97
+    rhoc_25 = 76.76  # 72.92 (-5%); 76.76; 80.60 (+5%)
+    rhoc_35 = 79.87
+    rhoc_45 = 82.91
+    rhoc_50 = 84.29  # 80.08 (-5%); 84.29; 88.5 (+5%);  updated 84.29 ; old 83.5
+    rhoc_55 = 85.38
+    rhoc_65 = 88.81
+    rhoc_75 = 92.94         # 88.3 (-5%); 92.94; 97.59 (+5%)
+    rhoc_85 = 98.28
+    rhoc_95 = 105.8
+    rhoc_100 = 119.46  #113.52 (-5%); 119.49; 125.46 (+5%);  update    119.49 ; old 105.8
 
-rhoc1st = rhoc_0, rhoc_5, rhoc_15, rhoc_25, rhoc_35, rhoc_45, \
-          rhoc_50, rhoc_55, rhoc_65, rhoc_75, rhoc_85, rhoc_95, rhoc_100
+    rhoc1st = rhoc_0, rhoc_5, rhoc_15, rhoc_25, rhoc_35, rhoc_45, \
+              rhoc_50, rhoc_55, rhoc_65, rhoc_75, rhoc_85, rhoc_95, rhoc_100
 
-# =============================================
-# set the number of samples and test sets
-# for one replication: 50:5 min; 100: 8 min; 500: 43 min; 1000: 86 min
-# samples = [50, 100, 500, 1000]  # one set takes 2.75 hr
-samples = [500]  # one set takes 2.75 hr
-sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
-# sensorLocationSeed = [1355, 2143, 3252, 8763, 12424]
-# sensorLocationSeed = [23424, 24232, 24654, 45234, 59230]
-# sensorLocationSeed = [24654]
+    # =============================================
+    # set the number of samples and test sets
+    # for one replication: 50:5 min; 100: 8 min; 500: 43 min; 1000: 86 min
+    # samples = [50, 100, 500, 1000]  # one set takes 2.75 hr
+    samples = [500]  # one set takes 2.75 hr
+    sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
+    # sensorLocationSeed = [1355, 2143, 3252, 8763, 12424]
+    # sensorLocationSeed = [23424, 24232, 24654, 45234, 59230]
+    # sensorLocationSeed = [24654]
 
-# =============================================
-directoryLoad = os.getcwd() + '/DATA/'
+    # PRsetTest = [0, 25, 50, 75, 100]
+    PRsetTest = [75]
 
-for sample in samples:
+    # =============================================
+    directoryLoad = os.getcwd() + '/DATA/'
 
-    for i in range(0, 1):
-        # only run one time
+    for sample in samples:
 
-        directorySave = os.getcwd() + '/Result/Estimation_corrected_10/'
+        for i in range(0, 10):
+            # only run one time
 
-        if not exists(directorySave):
-            os.makedirs(directorySave)
+            directorySave = os.getcwd() + '/Result/SA/Est_vm_5l_{0}/'.format(i)
 
-        t_start = time.time()
+            if not exists(directorySave):
+                os.makedirs(directorySave)
 
-        run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorLocationSeed)
+            t_start = time.time()
 
-        t_end = time.time()
+            run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorLocationSeed, PRsetTest)
 
-        print('Finished one round of estimation: {0} s'.format(t_end - t_start))
+            t_end = time.time()
 
-        #        end_time = time.time()
+            print('Finished one round of estimation: {0} s'.format(t_end - t_start))
 
-        #        plot_density(estimatedState, False, 'state'+marker, directorySave)
-        #        plot_density(densityTrue, False, 'state'+marker, directorySave)
+            #        end_time = time.time()
 
-        #
-        #        print 'running time is:', end_time-start_time
-        #
-        #        save(directorySave+'state'+marker, estimatedState)
-        ##            save(directorySave+'w'+marker, estimatedw)
-        #        save(directorySave+'model'+marker, estimatedModel)
-        ##            save(directorySave+'sampleMatch'+marker, sampleMatch)
-        #
-        #        bool = True
-        #        plot_density(estimatedState, bool, 'state'+marker, directorySave)
-        ##            plot_property(estimatedw, bool, 'property'+marker, directorySave)
-        #        plot_parameter(estimatedModel, bool, 'model'+marker, directorySave)
-        ##            plot_sampleMatch(sampleMatch, bool, 'sampleMatch'+marker, directorySave)
-        #
-        #
-        # '''
+            #        plot_density(estimatedState, False, 'state'+marker, directorySave)
+            #        plot_density(densityTrue, False, 'state'+marker, directorySave)
 
+            #
+            #        print 'running time is:', end_time-start_time
+            #
+            #        save(directorySave+'state'+marker, estimatedState)
+            ##            save(directorySave+'w'+marker, estimatedw)
+            #        save(directorySave+'model'+marker, estimatedModel)
+            ##            save(directorySave+'sampleMatch'+marker, sampleMatch)
+            #
+            #        bool = True
+            #        plot_density(estimatedState, bool, 'state'+marker, directorySave)
+            ##            plot_property(estimatedw, bool, 'property'+marker, directorySave)
+            #        plot_parameter(estimatedModel, bool, 'model'+marker, directorySave)
+            ##            plot_sampleMatch(sampleMatch, bool, 'sampleMatch'+marker, directorySave)
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
