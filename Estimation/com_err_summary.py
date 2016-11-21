@@ -54,6 +54,14 @@ def main(argv):
     error_array_1st_all, error_array_1st_ff, error_array_1st_cf, error_array_2nd_all, error_array_2nd_ff, error_array_2nd_cf = \
         compute_mae(directoryLoadData, directoryLoad, directoryLoadPrefix, PRsetTest, sensorLocationSeed, runs, max_rhoc[0])
 
+    # save errors
+    save(directorySave+'error_array_1st_all.npy', error_array_1st_all)
+    save(directorySave+'error_array_1st_ff.npy', error_array_1st_ff)
+    save(directorySave+'error_array_1st_cf.npy', error_array_1st_cf)
+    save(directorySave+'error_array_2nd_all.npy', error_array_2nd_all)
+    save(directorySave+'error_array_2nd_ff.npy', error_array_2nd_ff)
+    save(directorySave+'error_array_2nd_cf.npy', error_array_2nd_cf)
+
     # ==============================================================================
     # plot the average error for one run with seed scatters
     # scatter_seeds_err(directorySave, PRsetTest, sensorLocationSeed,
@@ -481,7 +489,7 @@ def scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs,
             avg_imp = []
             for r in range(0, len(runs)):
                 avg_imp.append([perc_improv[i,j,r]])
-            plt.scatter(PRsetTest[i] - 1, avg_imp, marker='o', s=20, color=colors[j])
+            plt.scatter(PRsetTest[i] - 1, mean(avg_imp), marker='o', s=20, color=colors[j])
             # plt.scatter(PRsetTest[i] + 1, perc_improv[i, j, run_id], marker='v', s=20, color=colors[j])
 
     plt.title(title, fontsize=fontsize[0])
