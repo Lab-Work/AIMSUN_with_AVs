@@ -332,10 +332,10 @@ def main(argv):
     rhoc_99 = 214.06       # 203.36 (-5%); 214.06; 224.76 (+5%)
     rhoc_100 = 214.06       # 203.36 (-5%); 214.06; 224.76 (+5%)
 
-    rhom_all = 644
+    rhom_all = 676      # 612 (-5%); 644; 676 (+5%)
     # rhom_all = 460
 
-    vmax_all = 72.47   # 72.47 (-5%); 76.28;  80.1 (+5%)
+    vmax_all = 76.28   # 72.47 (-5%); 76.28;  80.1 (+5%)
 
     beta = 600
 
@@ -381,7 +381,7 @@ def main(argv):
         for i in range(0, 10):
             # only run one time
 
-            directorySave = os.getcwd() + '/Result/SA/Est_vm_5l_{0}/'.format(i)
+            directorySave = os.getcwd() + '/Result/SA/Est_rhom_5h_{0}/'.format(i)
 
             if not exists(directorySave):
                 os.makedirs(directorySave)
