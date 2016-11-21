@@ -22,11 +22,11 @@ import sys
 def main(argv):
     PRsetTest = [0, 25, 50, 75, 100]
     # seed 24232 seems to be a bad simulation where the queue extended beyonded the entrance
-    sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
-    # sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24654, 45234, 59230]
+    # sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
+    sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24654, 45234, 59230]
     # sensorLocationSeed = [24232]    #24654
-    colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'darkblue', 'purple', 'hotpink']
-    # colors = ['b', 'g', 'r', 'c', 'm', 'y', 'darkblue', 'purple', 'hotpink']
+    # colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'darkblue', 'purple', 'hotpink']
+    colors = ['b', 'g', 'r', 'c', 'm', 'y', 'darkblue', 'purple', 'hotpink']
     seed_id = 0
     # the runs of the particle filter
     runs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
@@ -481,7 +481,7 @@ def scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs,
             avg_imp = []
             for r in range(0, len(runs)):
                 avg_imp.append([perc_improv[i,j,r]])
-            plt.scatter(PRsetTest[i] - 1, avg_imp, marker='o', s=20, color=colors[j])
+            plt.scatter(PRsetTest[i] - 1, mean(avg_imp), marker='o', s=20, color=colors[j])
             # plt.scatter(PRsetTest[i] + 1, perc_improv[i, j, run_id], marker='v', s=20, color=colors[j])
 
     plt.title(title, fontsize=fontsize[0])
