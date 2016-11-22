@@ -73,12 +73,12 @@ def main(argv):
 
         # compute and print the average error
         print('SA {0} error:'.format(sa))
-        print('--- 1st all, {0:.2f}: {1:.2f}'.format( average(error_array_1st_all), average(error_array_1st_all, axis=2)))
-        print('--- 2nd all, {0:.2f}: {1:.2f}'.format( average(error_array_2nd_all), average(error_array_2nd_all, axis=2)))
-        print('--- 1st ff, {0:.2f}: {1:.2f}'.format( average(error_array_1st_ff), average(error_array_1st_ff, axis=2)))
-        print('--- 2nd ff, {0:.2f}: {1:.2f}'.format( average(error_array_2nd_ff), average(error_array_2nd_ff, axis=2)))
-        print('--- 1st cf, {0:.2f}: {1:.2f}'.format( average(error_array_1st_cf), average(error_array_1st_cf, axis=2)))
-        print('--- 2nd cf, {0:.2f}: {1:.2f}'.format( average(error_array_2nd_cf), average(error_array_2nd_cf, axis=2)))
+        print('--- 1st all, {0:.2f}: {1}'.format( average(error_array_1st_all), average(error_array_1st_all, axis=2)))
+        print('--- 2nd all, {0:.2f}: {1}'.format( average(error_array_2nd_all), average(error_array_2nd_all, axis=2)))
+        print('--- 1st ff, {0:.2f}: {1}'.format( average(error_array_1st_ff), average(error_array_1st_ff, axis=2)))
+        print('--- 2nd ff, {0:.2f}: {1}'.format( average(error_array_2nd_ff), average(error_array_2nd_ff, axis=2)))
+        print('--- 1st cf, {0:.2f}: {1}'.format( average(error_array_1st_cf), average(error_array_1st_cf, axis=2)))
+        print('--- 2nd cf, {0:.2f}: {1}'.format( average(error_array_2nd_cf), average(error_array_2nd_cf, axis=2)))
 
         # save errors
         save(directorySave+'sa_error_{0}_1st_all.npy'.format(sa), error_array_1st_all)
@@ -129,9 +129,9 @@ def main(argv):
                                 error_array_2nd_all, error_array_2nd_ff, error_array_2nd_cf)
 
         print('SA {0} improvement:'.format(sa))
-        print('--- all, {0:.2f}: {1:.2f}'.format( average(perc_improv_all), average(perc_improv_all, axis=2)))
-        print('--- ff, {0:.2f}: {1:.2f}'.format( average(perc_improv_ff), average(perc_improv_ff, axis=2)))
-        print('--- cf, {0:.2f}: {1:.2f}'.format( average(perc_improv_cf), average(perc_improv_cf, axis=2)))
+        print('--- all, {0:.2f}: {1}'.format( average(perc_improv_all), average(perc_improv_all, axis=2)))
+        print('--- ff, {0:.2f}: {1}'.format( average(perc_improv_ff), average(perc_improv_ff, axis=2)))
+        print('--- cf, {0:.2f}: {1}'.format( average(perc_improv_cf), average(perc_improv_cf, axis=2)))
 
         #
         # scatter_seeds_perc_improve(directorySave, PRsetTest, sensorLocationSeed,
@@ -276,9 +276,9 @@ def compute_mae(directoryLoadData, directoryLoad, directoryLoadPrefix, PRsetTest
                 _error_array_2nd_cf[counterPR, counterSeed, counterRun] = error2ndCF
                 _error_array_2nd_all[counterPR, counterSeed, counterRun] = error2ndALL
 
-                print('Error sce {0}%, seed {1}, run {2}:'.format(PR, seed, run))
-                print('-- 1st order: ff {0}; cg {1}; all {2}'.format(error1stFF, error1stCF, error1stALL))
-                print('-- 2nd order: ff {0}; cg {1}; all {2}'.format(error2ndFF, error2ndCF, error2ndALL))
+                # print('Error sce {0}%, seed {1}, run {2}:'.format(PR, seed, run))
+                # print('-- 1st order: ff {0}; cg {1}; all {2}'.format(error1stFF, error1stCF, error1stALL))
+                # print('-- 2nd order: ff {0}; cg {1}; all {2}'.format(error2ndFF, error2ndCF, error2ndALL))
 
 
                 # avg_1stTR.append(mean(errors_1stTR))
