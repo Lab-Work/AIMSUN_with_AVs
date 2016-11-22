@@ -59,8 +59,8 @@ def main(argv):
     dirs_load['rhom_5h'] = os.getcwd() + '/Result/SA/Est_rhom_5h_'
     dirs_load['2nd_5l'] = os.getcwd() + '/Result/SA/Est_2nd_5l_'
     dirs_load['2nd_5h'] = os.getcwd() + '/Result/SA/Est_2nd_5h_'
-    dirs_load['rhoc75_5l'] = os.getcwd() + '/Result/SA/Est_rhoc_5l_'
-    dirs_load['rhoc75_5h'] = os.getcwd() + '/Result/SA/Est_rhoc_5h_'
+    dirs_load['rhoc75_5l'] = os.getcwd() + '/Result/SA/Est_rhoc75_5l_'
+    dirs_load['rhoc75_5h'] = os.getcwd() + '/Result/SA/Est_rhoc75_5h_'
 
     print('Sensitivity analysis for U(0,0.75)')
     for sa in sa_sces:
@@ -376,6 +376,7 @@ def scatter_seeds_err(directorySave, PRsetTest, sensorLocationSeed,
     # plt.ylim([0,75])
 
     plt.savefig(directorySave + '{0}.pdf'.format(savename), bbox_inches='tight')
+    plt.clf()
 
 
 # ======================================================================================================================
@@ -415,6 +416,7 @@ def scatter_seeds_perc_improve(directorySave, PRsetTest, sensorLocationSeed,
     # plt.ylim([33,65])
 
     plt.savefig(directorySave + '{0}.pdf'.format(savename), bbox_inches='tight')
+    plt.clf()
 
 
 # ======================================================================================================================
@@ -457,6 +459,7 @@ def scatter_runs_err(directorySave, PRsetTest, runs,
     # plt.ylim([33,65])
 
     plt.savefig(directorySave + '{0}.pdf'.format(savename), bbox_inches='tight')
+    plt.clf()
 
 
 # ======================================================================================================================
@@ -506,6 +509,7 @@ def scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
     # plt.ylim([0,75])
 
     plt.savefig(directorySave + '{0}.pdf'.format(savename), bbox_inches='tight')
+    plt.clf()
 
 
 # ======================================================================================================================
@@ -548,7 +552,7 @@ def scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs,
     # plt.ylim([33,65])
 
     plt.savefig(directorySave + '{0}.pdf'.format(savename), bbox_inches='tight')
-
+    plt.clf()
 
 
 
