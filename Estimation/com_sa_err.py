@@ -53,14 +53,14 @@ def main(argv):
 
     dirs_load = {}
     dirs_load['normal'] = os.getcwd() + '/Result/Estimation_corrected_'
-    dirs_load['vm_5l'] = os.getcwd() + '/Result/SA/Estimation_vm_5l_'
-    dirs_load['vm_5h'] = os.getcwd() + '/Result/SA/Estimation_vm_5h_'
-    dirs_load['rhom_5l'] = os.getcwd() + '/Result/SA/Estimation_rhom_5l_'
-    dirs_load['rhom_5h'] = os.getcwd() + '/Result/SA/Estimation_rhom_5h_'
-    dirs_load['2nd_5l'] = os.getcwd() + '/Result/SA/Estimation_2nd_5l_'
-    dirs_load['2nd_5h'] = os.getcwd() + '/Result/SA/Estimation_2nd_5h_'
-    dirs_load['rhoc75_5l'] = os.getcwd() + '/Result/SA/Estimation_rhoc_5l_'
-    dirs_load['rhoc75_5h'] = os.getcwd() + '/Result/SA/Estimation_rhoc_5h_'
+    dirs_load['vm_5l'] = os.getcwd() + '/Result/SA/Est_vm_5l_'
+    dirs_load['vm_5h'] = os.getcwd() + '/Result/SA/Est_vm_5h_'
+    dirs_load['rhom_5l'] = os.getcwd() + '/Result/SA/Est_rhom_5l_'
+    dirs_load['rhom_5h'] = os.getcwd() + '/Result/SA/Est_rhom_5h_'
+    dirs_load['2nd_5l'] = os.getcwd() + '/Result/SA/Est_2nd_5l_'
+    dirs_load['2nd_5h'] = os.getcwd() + '/Result/SA/Est_2nd_5h_'
+    dirs_load['rhoc75_5l'] = os.getcwd() + '/Result/SA/Est_rhoc_5l_'
+    dirs_load['rhoc75_5h'] = os.getcwd() + '/Result/SA/Est_rhoc_5h_'
 
     print('Sensitivity analysis for U(0,0.75)')
     for sa in sa_sces:
@@ -73,13 +73,18 @@ def main(argv):
 
         # compute and print the average error
         print('SA {0} error:'.format(sa))
-        print('--- 1st all, {0:.2f}: {1}'.format( average(error_array_1st_all), average(error_array_1st_all, axis=2)))
-        print('--- 2nd all, {0:.2f}: {1}'.format( average(error_array_2nd_all), average(error_array_2nd_all, axis=2)))
-        print('--- 1st ff, {0:.2f}: {1}'.format( average(error_array_1st_ff), average(error_array_1st_ff, axis=2)))
-        print('--- 2nd ff, {0:.2f}: {1}'.format( average(error_array_2nd_ff), average(error_array_2nd_ff, axis=2)))
-        print('--- 1st cf, {0:.2f}: {1}'.format( average(error_array_1st_cf), average(error_array_1st_cf, axis=2)))
-        print('--- 2nd cf, {0:.2f}: {1}'.format( average(error_array_2nd_cf), average(error_array_2nd_cf, axis=2)))
-
+        print('--- 1st all, {0:.2f}: {1}'.format( average(error_array_1st_all),
+                                                  ', '.join(['{0:.2f}'.format(i) for i in average(error_array_1st_all, axis=2).flatten()]) ) )
+        print('--- 2nd all, {0:.2f}: {1}'.format( average(error_array_2nd_all),
+                                                  ', '.join(['{0:.2f}'.format(i) for i in average(error_array_2nd_all, axis=2).flatten()]) ) )
+        print('--- 1st ff, {0:.2f}: {1}'.format( average(error_array_1st_ff),
+                                                 ', '.join(['{0:.2f}'.format(i) for i in average(error_array_1st_ff, axis=2).flatten()]) ) )
+        print('--- 2nd ff, {0:.2f}: {1}'.format( average(error_array_2nd_ff),
+                                                 ', '.join(['{0:.2f}'.format(i) for i in average(error_array_2nd_ff, axis=2).flatten()]) ) )
+        print('--- 1st cf, {0:.2f}: {1}'.format( average(error_array_1st_cf),
+                                                 ', '.join(['{0:.2f}'.format(i) for i in average(error_array_1st_cf, axis=2).flatten()]) ) )
+        print('--- 2nd cf, {0:.2f}: {1}'.format( average(error_array_2nd_cf),
+                                                 ', '.join(['{0:.2f}'.format(i) for i in average(error_array_2nd_cf, axis=2).flatten()]) ) )
         # save errors
         save(directorySave+'sa_error_{0}_1st_all.npy'.format(sa), error_array_1st_all)
         save(directorySave+'sa_error_{0}_1st_ff.npy'.format(sa), error_array_1st_ff)
@@ -129,9 +134,12 @@ def main(argv):
                                 error_array_2nd_all, error_array_2nd_ff, error_array_2nd_cf)
 
         print('SA {0} improvement:'.format(sa))
-        print('--- all, {0:.2f}: {1}'.format( average(perc_improv_all), average(perc_improv_all, axis=2)))
-        print('--- ff, {0:.2f}: {1}'.format( average(perc_improv_ff), average(perc_improv_ff, axis=2)))
-        print('--- cf, {0:.2f}: {1}'.format( average(perc_improv_cf), average(perc_improv_cf, axis=2)))
+        print('--- all, {0:.2f}: {1}'.format( average(perc_improv_all),
+                                              ', '.join(['{0:.2f}'.format(i) for i in average(perc_improv_all, axis=2).flatten()]) ) )
+        print('--- ff, {0:.2f}: {1}'.format( average(perc_improv_ff),
+                                             ', '.join(['{0:.2f}'.format(i) for i in average(perc_improv_ff, axis=2).flatten()]) ) )
+        print('--- cf, {0:.2f}: {1}'.format( average(perc_improv_cf),
+                                             ', '.join(['{0:.2f}'.format(i) for i in average(perc_improv_cf, axis=2).flatten()]) ) )
 
         #
         # scatter_seeds_perc_improve(directorySave, PRsetTest, sensorLocationSeed,
