@@ -84,53 +84,56 @@ PRset = [0, 25, 50, 75, 100]
 sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
 
 truestate_dir = os.getcwd()+'/DATA/'
-result_dir = os.getcwd()+'/Result/Estimation/'
+result_dir = os.getcwd()+'/Result/Estimation_paper_rv/Estimation_corrected_0/'
 
 fontsize = (40, 38, 36)
 
 ##########################################################################################
 # update all resutls in new format
 # for PR in PRset:
-
+#
 #     for seed in sensorLocationSeed:
-
+#
 #         # plot true density
 #         filename = 'TrueDensity_{0}_{1}.npy'.format(PR, seed)
-#         densityTrue = load(truestate_dir+ filename) 
-#         plot_2d_data(densityTrue, truestate_dir, 'PlotTrueDensity_{0}_{1}.pdf'.format(PR, seed), 
+#         densityTrue = load(truestate_dir+ filename)
+#         plot_2d_data(densityTrue, truestate_dir, 'PlotTrueDensity_{0}_{1}.pdf'.format(PR, seed),
 #             title='True density', figsize=(10,10), fontsize=fontsize, limit=(0, 644))
-
+#
 #         # plot 1st estimated density
 #         filename = 'EstimationDensity_PR_{0}_Seed{1}_1st.npy'.format(PR, seed)
-#         density = load(result_dir+ filename) 
-#         plot_2d_data(density, result_dir, 'PlotEstimationDensityPR_{0}_Seed{1}_1st.pdf'.format(PR, seed), 
+#         density = load(result_dir+ filename)
+#         plot_2d_data(density, result_dir, 'PlotEstimationDensityPR_{0}_Seed{1}_1st.pdf'.format(PR, seed),
 #             title='Estimated density (1st)', figsize=(10,10), fontsize=fontsize, limit=(0, 644))
-
+#
 #         # plot 2nd estimated density
 #         filename = 'EstimationDensity_PR_{0}_Seed{1}_2nd.npy'.format(PR, seed)
-#         density = load(result_dir+ filename) 
-#         plot_2d_data(density, result_dir, 'PlotEstimationDensityPR_{0}_Seed{1}_2nd.pdf'.format(PR, seed), 
+#         density = load(result_dir+ filename)
+#         plot_2d_data(density, result_dir, 'PlotEstimationDensityPR_{0}_Seed{1}_2nd.pdf'.format(PR, seed),
 #             title='Estimated density (2nd)', figsize=(10,10), fontsize=fontsize, limit=(0, 644))
 
 
-
-
+# ================================================================
 # plot true and esitmated property for two cases
-# true_w = load(result_dir + 'TrueW_PR_0_seed2143.npy')
-# plot_2d_data(true_w, result_dir, 'PlotTrueW_PR_0_seed2143.pdf', 
+true_w = load(result_dir + 'TrueW_PR_50_seed24654.npy')
+plot_2d_data(true_w, result_dir, 'PlotTrueW_PR_50_seed24654.pdf',
+    title='True fraction of AVs', figsize=(12,12), fontsize=fontsize, limit=(0, 1))
+
+# true_w = load(result_dir + 'TrueW_PR_100_seed2143.npy')
+# plot_2d_data(true_w, result_dir, 'PlotTrueW_PR_100_seed2143.pdf',
 #     title='True fraction of AVs', figsize=(10,10), fontsize=fontsize, limit=(0, 1))
 
-true_w = load(result_dir + 'TrueW_PR_100_seed2143.npy')
-plot_2d_data(true_w, result_dir, 'PlotTrueW_PR_100_seed2143.pdf', 
-    title='True fraction of AVs', figsize=(10,10), fontsize=fontsize, limit=(0, 1))
 
+# ================================================================
 # convert and plot the true property
 # filename = 'truestate_5s179m_sce50_seed24654_w.txt'
 # true_w = extract_true(truestate_dir, filename)
-# save(result_dir+'TrueW_PR_50_seed24654.npy', true_w)  
-# plot_2d_data(true_w, result_dir, 'PlotTrueW_PR_50_seed24654.pdf', 
+# save(result_dir+'TrueW_PR_50_seed24654.npy', true_w)
+# plot_2d_data(true_w, result_dir, 'PlotTrueW_PR_50_seed24654.pdf',
 #     title='True fraction of AVs', figsize=(10,10), fontsize=fontsize, limit=(0, 1))
 
+
+# ================================================================
 # # plot the estimated property
 # est_w = load(result_dir + 'EstimationW_PR_0_seed2143_1st.npy')
 # plot_2d_data(est_w, result_dir, 'PlotEstimationW_PR_0_seed2143_1st.pdf', 
@@ -149,8 +152,13 @@ plot_2d_data(true_w, result_dir, 'PlotTrueW_PR_100_seed2143.pdf',
 #     title='Estimated fraction of AVs', figsize=(10,10), fontsize=fontsize, limit=(0, 1))
 
 
-
-
+# est_w = load(result_dir + 'EstimationW_PR_50_seed24654_1st.npy')
+# plot_2d_data(est_w, result_dir, 'PlotEstimationW_PR_50_seed24654_1st.pdf',
+#     title='Estimated fraction of AVs (1st)', figsize=(12,12), fontsize=fontsize, limit=(0, 1))
+#
+# est_w = load(result_dir + 'EstimationW_PR_50_seed24654_2nd.npy')
+# plot_2d_data(est_w, result_dir, 'PlotEstimationW_PR_50_seed24654_2nd.pdf',
+#     title='Estimated fraction of AVs (2nd)', figsize=(12,12), fontsize=fontsize, limit=(0, 1))
 
 
 
