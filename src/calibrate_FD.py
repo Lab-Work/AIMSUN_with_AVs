@@ -64,24 +64,24 @@ def main(argv):
     # fd_2nd_pav_list = [[0.22, 0.28], [0.72, 0.78]]
 
 
-    # preset_vm_beta = [76.28, 600]
-    preset_vm_beta = None
+    preset_vm_beta = [76.28, 600]
+    # preset_vm_beta = None
     rho_max = 644  # veh/mile
-    preset_vm_beta = calibrate_NC_QLFD(file_list, fd_2nd_pav_list,
-                                       fd_2nd_freeflow_thres, rho_max,
-                                       preset_vm_beta, save_fig=True, order='second')
+    # preset_vm_beta = calibrate_NC_QLFD(file_list, fd_2nd_pav_list,
+    #                                    fd_2nd_freeflow_thres, rho_max,
+    #                                    preset_vm_beta, save_fig=True, order='second')
 
     # ============================================================
     # calibrate the first order FDs
     if True:
-        fd_1st_pav_list = [[0.0, 0.0], [0.0, 0.05], [0.0, 0.15], [0.0, 0.25], [0.0, 0.35], 
-                           [0.0, 0.45], [0.0, 0.5], [0.0, 0.55], [0.0, 0.65], [0.0, 0.75], 
-                           [0.0, 0.85], [0.0, 0.95], [0.0, 1.0]]
-        fd_1st_freeflow_thres = [40, 40, 40, 40, 40, 
-                                 40, 40, 40, 40, 40, 
-                                 40, 40, 40]
-        # fd_1st_pav_list = [[0.0, 0.0], [0.0, 0.5], [0.0, 1.0]]
-        # fd_1st_freeflow_thres = [40, 40, 40]
+        # fd_1st_pav_list = [[0.0, 0.0], [0.0, 0.05], [0.0, 0.15], [0.0, 0.25], [0.0, 0.35], 
+        #                    [0.0, 0.45], [0.0, 0.5], [0.0, 0.55], [0.0, 0.65], [0.0, 0.75], 
+        #                    [0.0, 0.85], [0.0, 0.95], [0.0, 1.0]]
+        # fd_1st_freeflow_thres = [40, 40, 40, 40, 40, 
+        #                          40, 40, 40, 40, 40, 
+        #                          40, 40, 40]
+        fd_1st_pav_list = [[0.0, 0.25], [0.0, 0.5]]
+        fd_1st_freeflow_thres = [40, 40]
         calibrate_NC_QLFD(file_list, fd_1st_pav_list, fd_1st_freeflow_thres,
                           rho_max, preset_vm_beta, save_fig=True, order='first')
 
@@ -312,12 +312,12 @@ def calibrate_NC_QLFD(cleaned_data_files, pAV_ranges, freeflow_thres,
         fig = fig_window.add_subplot(111)
 
         # freeflow side
-        plt.scatter(density[freeFlow], flow[freeFlow], c='g', linewidths=0, marker='o')
+        plt.scatter(density[freeFlow], flow[freeFlow], c='k', linewidths=0, marker='o')
         dens = np.linspace(0, rho_c, 100)
         plt.plot(dens, funcQuadAll(all_vm, all_beta, dens), 'r-', linewidth=2.0)
 
         # congested side
-        plt.scatter(density[~freeFlow], flow[~freeFlow], c='b', linewidths=0, marker='o')
+        plt.scatter(density[~freeFlow], flow[~freeFlow], c='k', linewidths=0, marker='o')
         dens = np.linspace(rho_c, rho_m, 100)
         plt.plot(dens, w * (dens - rho_m), 'r-', linewidth=2.0)
 
