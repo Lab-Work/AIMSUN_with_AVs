@@ -48,19 +48,25 @@ def main(argv):
 
     # =====================================================================
     # Set the directories that need to be computed
-    sa_sces = ['normal', 'vm_5l', 'vm_5h', 'rhom_5l', 'rhom_5h',
-               '2nd_5l', '2nd_5h', 'rhoc75_5l', 'rhoc75_5h']
+    # sa_sces = ['normal', 'vm_5l', 'vm_5h', 'rhom_5l', 'rhom_5h',
+    #            '2nd_5l', '2nd_5h', 'rhoc75_5l', 'rhoc75_5h']
+    sa_sces = ['2nd_10h', '2nd_20h', 'rhoc75_10h', 'rhoc75_20h']
 
     dirs_load = {}
-    dirs_load['normal'] = os.getcwd() + '/Result/Estimation_corrected_'
-    dirs_load['vm_5l'] = os.getcwd() + '/Result/SA/Est_vm_5l_'
-    dirs_load['vm_5h'] = os.getcwd() + '/Result/SA/Est_vm_5h_'
-    dirs_load['rhom_5l'] = os.getcwd() + '/Result/SA/Est_rhom_5l_'
-    dirs_load['rhom_5h'] = os.getcwd() + '/Result/SA/Est_rhom_5h_'
-    dirs_load['2nd_5l'] = os.getcwd() + '/Result/SA/Est_2nd_5l_'
-    dirs_load['2nd_5h'] = os.getcwd() + '/Result/SA/Est_2nd_5h_'
-    dirs_load['rhoc75_5l'] = os.getcwd() + '/Result/SA/Est_rhoc75_5l_'
-    dirs_load['rhoc75_5h'] = os.getcwd() + '/Result/SA/Est_rhoc75_5h_'
+    # dirs_load['normal'] = os.getcwd() + '/Result/Estimation_corrected_'
+    # dirs_load['vm_5l'] = os.getcwd() + '/Result/SA/Est_vm_5l_'
+    # dirs_load['vm_5h'] = os.getcwd() + '/Result/SA/Est_vm_5h_'
+    # dirs_load['rhom_5l'] = os.getcwd() + '/Result/SA/Est_rhom_5l_'
+    # dirs_load['rhom_5h'] = os.getcwd() + '/Result/SA/Est_rhom_5h_'
+    # dirs_load['2nd_5l'] = os.getcwd() + '/Result/SA/Est_2nd_5l_'
+    # dirs_load['2nd_5h'] = os.getcwd() + '/Result/SA/Est_2nd_5h_'
+    # dirs_load['rhoc75_5l'] = os.getcwd() + '/Result/SA/Est_rhoc75_5l_'
+    # dirs_load['rhoc75_5h'] = os.getcwd() + '/Result/SA/Est_rhoc75_5h_'
+
+    dirs_load['2nd_10h'] = os.getcwd() + '/Result/SA/Est_2nd_10h_'
+    dirs_load['2nd_20h'] = os.getcwd() + '/Result/SA/Est_2nd_20h_'
+    dirs_load['rhoc75_10h'] = os.getcwd() + '/Result/SA/Est_rhoc75_10h_'
+    dirs_load['rhoc75_20h'] = os.getcwd() + '/Result/SA/Est_rhoc75_20h_'
 
     print('Sensitivity analysis for U(0,0.75)')
     for sa in sa_sces:
