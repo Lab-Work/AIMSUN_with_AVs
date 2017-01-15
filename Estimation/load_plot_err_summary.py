@@ -22,12 +22,12 @@ import sys
 def main(argv):
     PRsetTest = [0, 25, 50, 75, 100]
     # seed 24232 seems to be a bad simulation where the queue extended beyonded the entrance
-    # sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
-    sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24654, 45234, 59230]
+    sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
+    # sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24654, 45234, 59230]
     # sensorLocationSeed = [24232]    #24654
-    # colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'darkblue', 'purple', 'hotpink']
-    colors = ['b', 'g', 'r', 'c', 'm', 'y', 'darkblue', 'purple', 'hotpink']
-    seed_id = 0
+    colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'darkblue', 'purple', 'hotpink']
+    # colors = ['b', 'g', 'r', 'c', 'm', 'y', 'darkblue', 'purple', 'hotpink']
+    # seed_id = 0
     # the runs of the particle filter
     runs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     # runs = [0]
@@ -54,12 +54,12 @@ def main(argv):
     # error_array_1st_all, error_array_1st_ff, error_array_1st_cf, error_array_2nd_all, error_array_2nd_ff, error_array_2nd_cf = \
     #     compute_mae(directoryLoadData, directoryLoad, directoryLoadPrefix, PRsetTest, sensorLocationSeed, runs, max_rhoc[0])
 
-    error_array_1st_all = load(directorySave+'error_array_9sim_1st_all.npy')
-    error_array_1st_ff = load(directorySave+'error_array_9sim_1st_ff.npy')
-    error_array_1st_cf = load(directorySave+'error_array_9sim_1st_cf.npy')
-    error_array_2nd_all = load(directorySave+'error_array_9sim_2nd_all.npy')
-    error_array_2nd_ff = load(directorySave+'error_array_9sim_2nd_ff.npy')
-    error_array_2nd_cf = load(directorySave+'error_array_9sim_2nd_cf.npy')
+    error_array_1st_all = load(directorySave+'error_array_10sim_1st_all.npy')
+    error_array_1st_ff = load(directorySave+'error_array_10sim_1st_ff.npy')
+    error_array_1st_cf = load(directorySave+'error_array_10sim_1st_cf.npy')
+    error_array_2nd_all = load(directorySave+'error_array_10sim_2nd_all.npy')
+    error_array_2nd_ff = load(directorySave+'error_array_10sim_2nd_ff.npy')
+    error_array_2nd_cf = load(directorySave+'error_array_10sim_2nd_cf.npy')
 
     # ==============================================================================
     # plot the average error for one run with seed scatters
@@ -113,25 +113,25 @@ def main(argv):
     # ==============================================================================
     # plot multiple seeds with multiple runs
     scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
-                error_array_1st_all, '1st model',
-                error_array_2nd_all, '2nd model', colors, 'Mean estimation error', 'err_summary_all',
+                error_array_1st_all, '1st order model',
+                error_array_2nd_all, '2nd order model', colors, 'Mean estimation error', 'err_summary_all',
                 ylim=[27,70])   # 9sim: [27,70]; 10sim: [25,90]
-    scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
-                error_array_1st_ff, '1st free flow',
-                error_array_2nd_ff, '2nd free flow', colors, 'Mean estimation error in free flow', 'err_summary_ff',
-                ylim=[5,75])    # 9sim: [5,75]; 10sim:[5,70]
-    scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
-                error_array_1st_cf, '1st congested flow',
-                error_array_2nd_cf, '2nd congested flow', colors, 'Mean estimation error in congested flow',
-                'err_summary_cf', ylim=[41,80])     # 9sim: [41,80]; 10sim:[35,125]
+    # scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
+    #             error_array_1st_ff, '1st free flow',
+    #             error_array_2nd_ff, '2nd free flow', colors, 'Mean estimation error in free flow', 'err_summary_ff',
+    #             ylim=[5,75])    # 9sim: [5,75]; 10sim:[5,70]
+    # scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
+    #             error_array_1st_cf, '1st congested flow',
+    #             error_array_2nd_cf, '2nd congested flow', colors, 'Mean estimation error in congested flow',
+    #             'err_summary_cf', ylim=[41,80])     # 9sim: [41,80]; 10sim:[35,125]
 
     # plot the percent improvement
     scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs, perc_improv_all, colors,
-                         'Improvement of 2nd over 1st', 'err_summary_perc_all', ylim=[-15,50])  # 9sim: [-15,50]
-    scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs, perc_improv_ff, colors,
-                         'Improvement of 2nd over 1st in free flow', 'err_summary_perc_ff')
-    scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs, perc_improv_cf, colors,
-                         'Improvement of 2nd over 1st in congested flow', 'err_summary_perc_cf')
+                         'Improvement of 2nd over 1st', 'err_summary_perc_all', ylim=[0,20])  # 9sim: [-15,50]
+    # scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs, perc_improv_ff, colors,
+    #                      'Improvement of 2nd over 1st in free flow', 'err_summary_perc_ff')
+    # scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs, perc_improv_cf, colors,
+    #                      'Improvement of 2nd over 1st in congested flow', 'err_summary_perc_cf')
 
 
 # ========================================================================================================================
@@ -449,8 +449,8 @@ def scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
                 avg_2nd.append(error_array_2[i,j,r])
 
             # only scatter the averaged result for each simulation
-            plt.scatter(PRsetTest[i] - 1, mean(avg_1st), marker='o', s=20, color=colors[j])
-            plt.scatter(PRsetTest[i] + 1, mean(avg_2nd), marker='v', s=20, color=colors[j])
+            # plt.scatter(PRsetTest[i] - 1, mean(avg_1st), marker='o', s=20, color=colors[j])
+            # plt.scatter(PRsetTest[i] + 1, mean(avg_2nd), marker='v', s=20, color=colors[j])
 
     plt.title(title, fontsize=fontsize[0])
     plt.xlabel('Distribution of $w$', fontsize=fontsize[1])
@@ -483,21 +483,23 @@ def scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs,
     # plt.rc('xtick',labelsize=20)
     # plt.rc('ytick',labelsize=20)
 
-    plt.plot(PRsetTest, average(average(perc_improv, axis=1), axis=1), color='r', marker='*',
-             markersize=10, linestyle='--', linewidth=2)
+    # plt.plot(PRsetTest, average(average(perc_improv, axis=1), axis=1), color='r', marker='*',
+             # markersize=10, linestyle='--', linewidth=2)
+    plt.bar(arange(0, len(PRsetTest))-0.15, average(average(perc_improv, axis=1), axis=1), width=0.3)
 
+    print average(average(perc_improv, axis=1), axis=1)
     # scatter the distribution
     for i in range(0, len(PRsetTest)):
         for j in range(0, len(sensorLocationSeed)):
             avg_imp = []
             for r in range(0, len(runs)):
                 avg_imp.append([perc_improv[i,j,r]])
-            plt.scatter(PRsetTest[i] - 1, mean(avg_imp), marker='o', s=20, color=colors[j])
+            # plt.scatter(PRsetTest[i] - 1, mean(avg_imp), marker='o', s=20, color=colors[j])
             # plt.scatter(PRsetTest[i] + 1, perc_improv[i, j, run_id], marker='v', s=20, color=colors[j])
 
     plt.title(title, fontsize=fontsize[0])
     plt.xlabel('Distribution of $w$', fontsize=fontsize[1])
-    x_ticks = array([0, 25, 50, 75, 100])
+    x_ticks = array([0, 1, 2, 3, 4])
     x_ticklabels = ['$\mathcal{U}(0,0)$', '$\mathcal{U}(0,0.25)$', '$\mathcal{U}(0,0.5)$', '$\mathcal{U}(0,0.75)$',
                     '$\mathcal{U}(0,1.0)$']
     ax.set_xticks(x_ticks)
@@ -506,8 +508,8 @@ def scatter_perc_improve(directorySave, PRsetTest, sensorLocationSeed, runs,
     plt.ylabel('Percent (%)', fontsize=fontsize[1])
     ax.tick_params(labelsize=fontsize[2])
 
-    plt.legend(loc=2, fontsize=fontsize[2])
-    plt.xlim([-2, 102])
+    # plt.legend(loc=2, fontsize=fontsize[2])
+    plt.xlim([-0.2, 4.2])
     if ylim is not None:
         plt.ylim(ylim)
 
