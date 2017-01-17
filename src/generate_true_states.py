@@ -91,7 +91,7 @@ def main(argv):
                 continue
 
             # ==================================================
-            # convert sqlite to trajectory data
+            # convert sqlite to trajectory data if csv not there
             print('\nGenerating true state for for sce {0} seed {1} ...'.format(sce, seed))
             if not exists(get_file_name('traj_data',sce, seed)):
 
@@ -420,6 +420,13 @@ def load_configuration(file_name):
                 else:
                     items = line.split(':')
                     config[items[0]] = __assertType(items[1])
+
+        # convert sim_scenarios, sim_seeds to lists
+        if type(config['sim_scenarios']) is not list:
+            config['sim_scenarios'] = [config['sim_scenarios']]
+        if type(config['sim_seeds']) is not list:
+            config['sim_seeds'] = [config['sim_seeds']]
+
         return config
 
     else:

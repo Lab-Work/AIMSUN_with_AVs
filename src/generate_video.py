@@ -41,15 +41,15 @@ def main(argv):
 
     # =================================================================
     # the trajectory file
-    traj_file = '../Simulation/traj_data/sim_sce50_seed24654.csv'
-    veh_type_file = '../Simulation/traj_data/sim_sce50_seed24654_vehtype.csv'
+    traj_file = '../Simulation/traj_data/sim_sce100_seed45234.csv'
+    veh_type_file = '../Simulation/traj_data/sim_sce100_seed45234_vehtype.csv'
 
-    est_density_prefix = '../Estimation/Result/Estimation_paper_rv/Video_sce50_seed24654_data/EstimationDensity_PR_50_Seed24654_'
-    est_w_prefix = '../Estimation/Result/Estimation_paper_rv/Video_sce50_seed24654_data/EstimationW_PR_50_Seed24654_'
-    true_density_file = '../Estimation/Result/Estimation_paper_rv/Video_sce50_seed24654_data/TrueDensity_PR_50_Seed24654_2nd.npy'
-    true_w_file = '../Estimation/Result/Estimation_paper_rv/Video_sce50_seed24654_data/TrueW_PR_50_seed24654.npy'
+    est_density_prefix = '../Estimation/Result/Estimation_paper_rv/Video/Video_sce100_seed45234_data/EstimationDensity_PR_100_Seed45234_'
+    est_w_prefix = '../Estimation/Result/Estimation_paper_rv/Video/Video_sce100_seed45234_data/EstimationW_PR_100_Seed45234_'
+    true_density_file = '../Estimation/Result/Estimation_paper_rv/Video/Video_sce100_seed45234_data/TrueDensity_PR_100_Seed45234_2nd.npy'
+    true_w_file = '../Estimation/Result/Estimation_paper_rv/Video/Video_sce100_seed45234_data/TrueW_PR_100_seed45234.npy'
 
-    save_dir = '../Estimation/Result/Estimation_paper_rv/Video_sce50_seed24654_data/pics/'
+    save_dir = '../Estimation/Result/Estimation_paper_rv/Video/Video_sce100_seed45234_data/pics/'
 
     # =================================================================
     # load all the data
@@ -84,9 +84,9 @@ def main(argv):
 
     # =================================================================
     # for each time step, plot one figure and save the figure in save_dir
-    test_t = [15000]
-    # for t in sorted(snaps.keys()):
-    for t in test_t:
+    # test_t = [15000]
+    for t in sorted(snaps.keys()):
+    # for t in test_t:
         # note, t is integer, unit 0.1s
         f, axarr = plt.subplots(3, sharex=True, figsize=(18,10))
 
@@ -227,7 +227,7 @@ def get_snapshot(traj_file, veh_type, time_step=0.2):
     snaps = OrderedDict()
 
     # create keys first to speed up
-    times = np.arange(0, 36000 + 20*time_step, 10*time_step).astype(int)
+    times = np.arange(3000, 36000 + 20*time_step, 10*time_step).astype(int)
     for t in times:
         snaps[t] = []
 

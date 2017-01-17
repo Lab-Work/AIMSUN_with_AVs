@@ -440,8 +440,12 @@ class Virtual_Sensors:
                         spaces_sum_mat[d_idx, t_idx] = spaces_sum_mat[d_idx, t_idx] + delta_x
 
                         # add av spent time
-                        if self.__veh_type[vehicle] == av_type:
-                            av_times_sum_mat[d_idx, t_idx] = av_times_sum_mat[d_idx, t_idx] + delta_t
+                        try:
+                            if self.__veh_type[vehicle] == av_type:
+                                av_times_sum_mat[d_idx, t_idx] = av_times_sum_mat[d_idx, t_idx] + delta_t
+                        except KeyError:
+                            print('Warning: no matching veh id {0} in veh_type data'.format(vehicle))
+                            continue
 
         # compute flow, density and speed based on edie's definitions
         spaces_sum_mat = np.matrix(spaces_sum_mat)
