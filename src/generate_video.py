@@ -9,8 +9,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 """
-This script contains the code for generating a video comparing the performance of the estimators, including the
-microscopic simulation video.
+This script contains the code for generating a sequence of pictures comparing the performance of the estimators,
+including the microscopic simulation video.
+To combine pictures to a video:
+- install ffmpeg
+- cd to the folder of pics
+- run "ffmpeg -framerate 12 -pattern_type glob -i '*.png' -vf scale=1480:-2 -vcodec libx264 -pix_fmt yuv420p out.mp4"
 """
 
 # configure some global constants
@@ -80,9 +84,9 @@ def main(argv):
 
     # =================================================================
     # for each time step, plot one figure and save the figure in save_dir
-    # test_t = [15000]
-    for t in sorted(snaps.keys()):
-    # for t in test_t:
+    test_t = [15000]
+    # for t in sorted(snaps.keys()):
+    for t in test_t:
         # note, t is integer, unit 0.1s
         f, axarr = plt.subplots(3, sharex=True, figsize=(18,10))
 
@@ -102,18 +106,18 @@ def main(argv):
         axarr[0].set_xticks([0, dx*9, dx*18, dx*27])
         axarr[0].set_xticklabels(['0', '1', '2', '3'])
         axarr[0].legend(ncol=3)
-        text_str = 'Time: {0:.1f} s'.format(t/10.0)
+        text_str = 'Time: {0} s'.format(int(t/10.0))
         axarr[0].annotate(text_str, xy=(0.05, 0.88), xycoords='axes fraction', fontsize=16)
 
         # --------------------------------------------------
         # plot the penetration rate
         axarr[1].step(x_grid, 100.0*np.concatenate([[0], mean_w_2nd[t_row, :]]), color='g', linewidth=2, label='2nd')
         axarr[1].step(x_grid, 100.0*np.concatenate([[0], true_w[t_row, :]]), color='r', linewidth=2, label='true')
-        axarr[1].set_ylim([0, 130])
+        axarr[1].set_ylim([0, 100])
         axarr[1].set_ylabel('AV fraction (%)')
         axarr[1].legend(ncol=2)
         axarr[1].set_title('Fraction of AVs', fontsize=20)
-        text_str = 'Time: {0:.1f} s'.format(t/10.0)
+        text_str = 'Time: {0} s'.format(int(t/10.0))
         axarr[1].annotate(text_str, xy=(0.05, 0.88), xycoords='axes fraction', fontsize=16)
 
         # --------------------------------------------------
@@ -145,11 +149,11 @@ def main(argv):
         axarr[2].set_xlabel('Space (mile)', fontsize=18)
         axarr[2].set_ylim([0, 10])
         axarr[2].set_ylabel('Lane ID')
-        axarr[2].set_yticks([3, 7])
+        axarr[2].set_yticks([3.5, 6.5])
         axarr[2].set_yticklabels(['1', '2'])
         axarr[2].set_title('Aimsun simulation', fontsize=20)
 
-        text_str = 'Time: {0:.1f} s'.format(t/10.0)
+        text_str = 'Time: {0} s'.format(int(t/10.0))
         axarr[2].annotate(text_str, xy=(0.05, 0.88), xycoords='axes fraction', fontsize=16)
 
         # vehicle annotation
@@ -170,22 +174,22 @@ def main(argv):
             # cars on lane 1
             idx = (car_idx & lane1_idx)
             dists = snapshot[idx, 3]
-            axarr[2].scatter(dists, 3.5*np.ones(len(dists)), color='b', s=dot_size)
+            axarr[2].scatter(dists, 3.25*np.ones(len(dists)), color='b', s=dot_size)
 
             # cars on lane 2
             idx = (car_idx & lane2_idx)
             dists = snapshot[idx, 3]
-            axarr[2].scatter(dists, 6.5*np.ones(len(dists)), color='b', s=dot_size)
+            axarr[2].scatter(dists, 6.25*np.ones(len(dists)), color='b', s=dot_size)
 
             # avs on lane 1
             idx = (av_idx & lane1_idx)
             dists = snapshot[idx, 3]
-            axarr[2].scatter(dists, 3.5*np.ones(len(dists)), color='r', s=dot_size)
+            axarr[2].scatter(dists, 3.75*np.ones(len(dists)), color='r', s=dot_size)
 
             # avs on lane 2
             idx = (av_idx & lane2_idx)
             dists = snapshot[idx, 3]
-            axarr[2].scatter(dists, 6.5*np.ones(len(dists)), color='r', s=dot_size)
+            axarr[2].scatter(dists, 6.75*np.ones(len(dists)), color='r', s=dot_size)
 
         # --------------------------------------------------
         # save in folder
@@ -244,7 +248,7 @@ def get_snapshot(traj_file, veh_type, time_step=0.2):
                 try:
                     snaps[t].append([veh_id, veh_type[veh_id], int(row[_lane_idx]), float(row[_dist_idx])])
                 except KeyError:
-                    print('Warning: skip time key: {0}'.format(t))
+                    print('Warning: skip time key: {0}'.format(t/10.0))
             i+=1
 
     # remove unused keys

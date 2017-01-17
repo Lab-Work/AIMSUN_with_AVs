@@ -449,8 +449,8 @@ def scatter_err(directorySave, PRsetTest, sensorLocationSeed, runs,
                 avg_2nd.append(error_array_2[i,j,r])
 
             # only scatter the averaged result for each simulation
-            # plt.scatter(PRsetTest[i] - 1, mean(avg_1st), marker='o', s=20, color=colors[j])
-            # plt.scatter(PRsetTest[i] + 1, mean(avg_2nd), marker='v', s=20, color=colors[j])
+            plt.scatter(PRsetTest[i] - 1, mean(avg_1st), marker='o', s=20, color=colors[j])
+            plt.scatter(PRsetTest[i] + 1, mean(avg_2nd), marker='v', s=20, color=colors[j])
 
     plt.title(title, fontsize=fontsize[0])
     plt.xlabel('Distribution of $w$', fontsize=fontsize[1])
