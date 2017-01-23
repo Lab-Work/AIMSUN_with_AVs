@@ -17,7 +17,7 @@ mdl = ['1st', '2nd']
 
 for sce, seed in sce_seeds:
 
-	if not os.path.exists(video_dir + 'Video_sce{0}_seed{1}_data/'.format(sce, seed))
+	if not os.path.exists(video_dir + 'Video_sce{0}_seed{1}_data/'.format(sce, seed)):
 		os.mkdir(video_dir + 'Video_sce{0}_seed{1}_data/'.format(sce, seed))
 
 	for run in range(0, 10):
