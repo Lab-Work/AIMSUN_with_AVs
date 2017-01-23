@@ -19,8 +19,8 @@ This script is used to extract the detector data (including AV penetration rate.
 # ======================================================================================
 # directory = os.path.dirname(os.path.realpath(__file__))
 if sys.platform == 'win32':
-    config_file = 'C:\\Users\\TrafficControl\\Dropbox\\RenAimsunSimulation\\configuration_file.txt'
-    folder_dir = 'C:\\Users\\TrafficControl\\Dropbox\\RenAimsunSimulation\\Simulation\\'
+    config_file = '..\\configuration_file.txt'
+    folder_dir = '..\\Simulation\\'
     logger_path = folder_dir + 'Logs\\'
 elif sys.platform == 'darwin':
     config_file = '../configuration_file.txt'
@@ -38,6 +38,13 @@ def main(argv):
     # ============================================================
     # get all detector data
     file_list = []
+
+    # in case not a list
+    if type(config['sim_scenarios']) is not list:
+        config['sim_scenarios'] = [config['sim_scenarios']]
+    if type(config['sim_seeds']) is not list:
+        config['sim_seeds'] = [config['sim_seeds']]
+
     for pAV in config['sim_scenarios']:
 
         for seed in config['sim_seeds']:
@@ -93,9 +100,9 @@ def get_file_name(file_type, sce, seed):
             raise Exception('Unrecognized file type for naming.')
     elif sys.platform == 'darwin':
         if file_type == 'det_data':
-            return folder_dir + 'detector_data/fd_sce{0}_seed{1}_'.format(sce, seed)
+            return folder_dir + 'detector_data/sim_sce{0}_seed{1}_'.format(sce, seed)
         elif file_type == 'sqlite':
-            return folder_dir + 'aimsun_files/fd_sce{0}_seed{1}.sqlite'.format(sce, seed)
+            return folder_dir + 'aimsun_files/sim_sce{0}_seed{1}.sqlite'.format(sce, seed)
         elif file_type == 'raw_data':
             return folder_dir + 'raw_det_data/raw_fd_sce{0}_seed{1}.csv'.format(sce, seed)
         else:
@@ -163,6 +170,7 @@ def extract_det_data(sce, seed, config):
     # =================================================================
     # extract raw data from sqlite
     if True:
+        print('extracting MIDETEC from {0}'.format(get_file_name('sqlite', sce, seed)))
         con = sqlite3.connect(get_file_name('sqlite', sce, seed))
         cur = con.cursor()
         sqlite_data = cur.execute("SELECT * FROM MIDETEC")

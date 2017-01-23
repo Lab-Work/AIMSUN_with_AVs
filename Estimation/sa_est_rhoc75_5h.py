@@ -160,7 +160,6 @@ def run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorL
 
     # PRsetTest = [0, 25, 50, 75, 100]
 
-
     prRhocDict = generate_prRhocDict(PRset, rhoc1st)
 
     ###############################################################################################################
