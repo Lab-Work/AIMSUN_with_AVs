@@ -1,0 +1,1 @@
+The file `truestate_5s179m_sce0_seed12424_density.txt` contains the true density (veh/mile) on a discretized grid with resolution `5s179m` for scenario `0` simulated with random seed `12424`. Each file is a matrix with num\_steps(row) x num\_cells(col). The first row and first column entry is the time step 0 and space cell 0. 
