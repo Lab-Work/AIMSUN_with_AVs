@@ -29,7 +29,7 @@ The folloing describes the steps for generating the simualtion results.
 	- generate the AIMSUN ang files in [./aimsun_files](https://github.com/Lab-Work/AIMSUN_with_AVs/tree/master/Simulation/aimsun_files) for each scenarios and seed
 	- simulate the ang files, which will create a sqlite database file in [./aimsun_files](https://github.com/Lab-Work/AIMSUN_with_AVs/tree/master/Simulation/aimsun_files)
 	Make sure the paths are correct in [./src/aimsun_api_sim.py](https://github.com/Lab-Work/AIMSUN_with_AVs/blob/master/Simulation/src/aimsun_api_sim.py) file.
-2. Run "./src/generate_true_states.py", which will 
+2. Run [./src/generate_true_states.py](https://github.com/Lab-Work/AIMSUN_with_AVs/blob/master/Simulation/src/generate_true_states.py), which will 
 	- extract the raw detector data from sqlite database and save in [./raw_det_data](https://github.com/Lab-Work/AIMSUN_with_AVs/tree/master/Simulation/raw_det_data), and then
 	- parse the raw_det_data files and format them to clean detector datas in [./detector_data folder](https://github.com/Lab-Work/AIMSUN_with_AVs/tree/master/Simulation/detector_data). 
 3. Extract the trajectory data from sqlite database and save in [./traj_data folder](https://github.com/Lab-Work/AIMSUN_with_AVs/tree/master/Simulation/traj_data).
