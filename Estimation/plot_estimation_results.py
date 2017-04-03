@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
-"""
-Plot the estimation results and true state.
-
-@author: Ren
-"""
-
 import matplotlib.pyplot as plt
 from numpy import *
 import sys
 import os
+
+"""
+This script plots the estimated states. 
+"""
+__author__ = 'Ren Wang and Yanning Li'
 
 ##########################################################################################
 

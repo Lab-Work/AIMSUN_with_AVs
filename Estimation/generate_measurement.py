@@ -1,17 +1,14 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 10 15:00:57 2016
-
-@author: Ren
-"""
-
 import matplotlib.pyplot as plt
 from numpy import *
 import sys
 import os
 
-##########################################################################################
+"""
+This script formats the detector data to the format requried by the PF estimator. 
+"""
+__aurthor__ = 'Ren Wang and Yanning Li'
 
+##########################################################################################
 def extract_data(directoryLoad, filename):
     
     densityStore = zeros(720)
@@ -40,30 +37,20 @@ def extract_data(directoryLoad, filename):
 
 
 ##########################################################################################
-
-# the set of penetration rate
+# Set the scenarios
 PRset = [0, 25, 50, 75, 100]
-# sensor location
+# Set the sensor identifiers
 sensorLocationSet = [0,1,2,3]
+# Set the seeds
 sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
 
-#PRset = [0]
-## sensor location
-#sensorLocationSet = [0,1,2,3]
-#sensorLocationSeed = [1355]
-
-
+# Set the output directory
 directorySave = os.getcwd()+'/DATA/'
 
+# Set the input data directory
+directoryLoadMea = os.getcwd()+'/../Simulation/detector_data/'
 ##########################################################################################
 # extract measurements and boundary
-
-
-
-directoryLoadMea = os.getcwd()+'/../Simulation/detector_data/'
-
-
-
 for PR in PRset:
     
     for seed in sensorLocationSeed:

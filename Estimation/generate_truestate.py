@@ -1,17 +1,14 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Jun 10 15:00:57 2016
-
-@author: Ren
-"""
-
 import matplotlib.pyplot as plt
 from numpy import *
 import sys
 import os
 
-##########################################################################################
+"""
+This script copies and formats the true states data to the DATA folder needed in the estimator.
+"""
+__aurthor__ = 'Ren Wang and Yanning Li'
 
+##########################################################################################
 def extract_true(directory, filename):
     densityTrue = zeros((720,27))
     k = 0
@@ -35,20 +32,16 @@ def plot_true(densityTrue, directorySave, PR, seed):
     plt.clf()
 
 ##########################################################################################
-
-# the set of penetration rate
+# Set the senarios
 PRset = [0, 25, 50, 75, 100]
-# sensor location
+# Set the seeds
 sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
-
+# Set the output directory
 directorySave = os.getcwd()+'/DATA/'
-
-##########################################################################################
-
-# extract true
-
+# Set the input directory 
 directoryLoadTrue = os.getcwd()+'/../Simulation/true_states/'
-
+##########################################################################################
+# format true states for each scenario and seed
 for PR in PRset:
 
     for seed in sensorLocationSeed:
