@@ -1,0 +1,1 @@
+The detector data `sim_sce0_seed12424_PM0.txt` file contains the data for scenario `0` simulated with random seed `12424` for detector `PM0`, with four columns: timestamps(s), penetration of AVs (0~1), flow (veh/hr), speed (mph).
