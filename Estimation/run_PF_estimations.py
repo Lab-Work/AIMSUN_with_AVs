@@ -279,8 +279,6 @@ def run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorL
     timeStep = int(3600 / dt)
 
     trafficModelSet = ['1st', '2nd']
-    # sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
-    # #sensorLocationSeed = [1355]
 
 
     errorStore = zeros((len(PRsetTest), len(sensorLocationSeed), 2))
