@@ -23,7 +23,6 @@ def main(argv):
     # Specify the fundamental diagram parameters which is calibrated in the simulation phase.
     # The gparameters can be perturbed to perform the sensitivity analysis
     # ========================================================================================================
-    ## fd parameters
     ## 2nd model parameters
     rhoc_0 = 71.14          # 67.58 (-5%); 71.14; 74.70 (+5%)
     rhoc_1 = 71.14          # 67.58 (-5%); 71.14; 74.70 (+5%); 78.25 (+10%); 85.37 (+20%);
@@ -50,7 +49,9 @@ def main(argv):
     fdpNB = rhoc_0, rhoc_10, rhoc_20, rhoc_30, rhoc_40, rhoc_50, rhoc_60, \
             rhoc_70, rhoc_80, rhoc_90, rhoc_100, rhom_all, vmax_all, beta,
 
+    # ========================================================================================================
     # 1st model parameters
+    PRset = [0, 5, 15, 25, 35, 45, 50, 55, 65, 75, 85, 95, 100]
     rhoc_0 = 71.14          # 71.14; 74.7 (+5%);  
     rhoc_5 = 71.98
     rhoc_15 = 73.97
@@ -68,16 +69,23 @@ def main(argv):
     rhoc1st = rhoc_0, rhoc_5, rhoc_15, rhoc_25, rhoc_35, rhoc_45, \
               rhoc_50, rhoc_55, rhoc_65, rhoc_75, rhoc_85, rhoc_95, rhoc_100
 
+    prRhocDict = generate_prRhocDict(PRset, rhoc1st)
+
     # ========================================================================================================
     # set the number of samples and test sets
     # Approximately, the run time of the estimator for one replication: 
     #       50:5 min; 100: 8 min; 500: 43 min; 1000: 86 min
-    # samples = [50, 100, 500, 1000]  # one set takes 2.75 hr
-    samples = [500]  # one set takes 2.75 hr
+    samples = [500]
     
     # Run the estimator for the following scenario and seed
+    # PRsetTest: the experiment with penetration rate of AVs 75%
     PRsetTest = [75]
-    sensorLocationSeed = [2352,59230]
+    # PRsetTest = [0, 25, 50, 75, 100]
+
+    # sensorLocationSeed: the random seed for generating the experiment.
+    sensorLocationSeed = [2352, 59230]
+    # full: sensorLocationSeed = [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
+
 
     # ========================================================================================================
     directoryLoad = os.getcwd() + '/DATA/'
@@ -94,13 +102,12 @@ def main(argv):
 
             t_start = time.time()
 
-            run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorLocationSeed)
+            run_estimators(fdpNB, prRhocDict, directoryLoad, directorySave, sample, sensorLocationSeed, PRsetTest)
 
             t_end = time.time()
 
             print('Finished PF run {0}: {1} s'.format(i, t_end - t_start))
 
-        
 
 def init_weight(sample):
     ## particle weight update function
@@ -246,40 +253,42 @@ def generate_prRhocDict(PRset, rhoc1st):
 
 ###############################################################################################################
 
-def run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorLocationSeed, PRsetTest):
-    PRset = [0, 5, 15, 25, 35, 45, 50, 55, 65, 75, 85, 95, 100]
+def run_estimators(fdpNB, prRhocDict, directoryLoad, directorySave, sample, sensorLocationSeed, PRsetTest):
+    """
+    This function can be used to run the PF or for forward simulation.
+    :param fdpNB: the parameters for the second order model
+    :param prRhocDict: the rhoc parameters for the first order model
+    :param directoryLoad: the directory for loading data
+    :param directorySave: the directory for saving results
+    :param sample: the number of samples used in the PF
+    :param sensorLocationSeed: list of int, the seeds of different simulations
+        [1355, 2143, 3252, 8763, 12424, 23424, 24232, 24654, 45234, 59230]
+    :param PRsetTest: list of int, the scenarios with different penetrations of AVs
+        [0, 25, 50, 75, 100]
+    :return:
+    """
 
-    # PRsetTest = [0, 25, 50, 75, 100]
-
-    prRhocDict = generate_prRhocDict(PRset, rhoc1st)
-
-    ###############################################################################################################
-
-    ## noise parameters
-
+    # ==========================================================================================
+    # set the noise parameters
     modelNoiseMean = 0.0
     modelNoiseStd = 10.0
 
     densityMeaMean = 0.0
     densityMeaStd = 10.0
 
-    ################################################################################################################
-
-    ## discretization
+    # ==========================================================================================
+    # discretization
     dt = 5.0
     dx = 0.1111
     length = 3.0
     cellNumber = int(floor(length / dx))
 
-    ################################################################################################################
-
-    ## simulation parameter
-
+    # ==========================================================================================
+    # simulation parameter
     Lambda = dt / 3600 / dx
     timeStep = int(3600 / dt)
 
     trafficModelSet = ['1st', '2nd']
-
 
     errorStore = zeros((len(PRsetTest), len(sensorLocationSeed), 2))
     count1 = 0
@@ -288,35 +297,39 @@ def run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorL
     sensorLocation = [8, 17]
     savefigure = True
 
+    # ==========================================================================================
+    # run PF for each penetration rate experiments
     for PR in PRsetTest:
 
         seedCount = 0
+
+        # run PF for each simulation seed
         for seed in sensorLocationSeed:
 
+            # load the true density and measurements
             densityTrue = load(directoryLoad + 'TrueDensity_' + str(PR) + '_' + str(seed) + '.npy')
             densityMeasurement = load(directoryLoad + 'mea_' + str(PR) + '_' + str(seed) + '.npy')
 
+            # run PF for both 1st order model and 2nd order model
             for modelMarker in trafficModelSet:
 
                 marker = 'PR_' + str(PR) + '_Seed' + str(seed) + '_' + modelMarker
 
-                ################################################################################################################
-
+                # ==========================================================================================
+                # Load the boundary condition
                 boundary = load(directoryLoad + 'boundary_' + str(PR) + '_' + str(seed) + '.npy')
                 if modelMarker == '1st':
                     wBoundary1st = rhoc_to_w(fdpNB, PR, prRhocDict)
                     boundary[:, 1] = wBoundary1st
                     boundary[:, 3] = wBoundary1st
 
-                ################################################################################################################
-
-                ## Creat array to save results
+                # ==========================================================================================
+                # Creat array to save results
                 estimatedState = zeros((timeStep, cellNumber))
                 estimatedw = zeros((timeStep, cellNumber))
 
-                ################################################################################################################
-
-                ## Initialization
+                # ==========================================================================================
+                # Initialization
                 state = 1.0 * ones((sample, cellNumber))
                 w = 0.5 * ones((sample, cellNumber))
                 weight = init_weight(sample)
@@ -324,36 +337,47 @@ def run_estimators(fdpNB, rhoc1st, directoryLoad, directorySave, sample, sensorL
                 estimatedState[0] = average(state, axis=0)
                 estimatedw[0] = boundary[0, 1] * ones(cellNumber)
 
-                #        start_time = time.time()
-                #
+                # ==========================================================================================
+                # run for each time step
                 for k in range(1, timeStep):
-                    #                if mod(k,100) == 0:
-                    #                    print 'this is time step',k
-                    ###############################################################################################################
-                    ## PF            
 
+                    # --------------------------------------------------------------------------------------
+                    # set the in and out flow boundary condition: [inflow, inflow_w, outflow, outflow_w]
                     bdl = boundary[k, 0], boundary[k, 1]
                     bdr = boundary[k, 2], boundary[k, 3]
 
+                    # --------------------------------------------------------------------------------------
+                    # forward propagate each sample
                     for j in range(sample):
                         state[j], w[j] = ctm_2ql(state[j], w[j], fdpNB, Lambda, bdl, bdr, modelNoiseMean, modelNoiseStd,
                                                  inflow=-1.0, outflow=-1.0)
 
-                    densityMea = densityMeasurement[k]
+                    # NOTE: set True to run PF for estimation.
+                    #       set False to run forward simulation
+                    if True:
+                        # --------------------------------------------------------------------------------------
+                        # get density measurement and run measurement correction
+                        densityMea = densityMeasurement[k]
 
-                    likelihood, hasMeasurement = compute_likelihood(state, densityMea, densityMeaMean, densityMeaStd,
-                                                                    sample, sensorLocation)
+                        likelihood, hasMeasurement = compute_likelihood(state, densityMea, densityMeaMean, densityMeaStd,
+                                                                        sample, sensorLocation)
 
-                    #                    hasMeasurement = False
+                        if hasMeasurement:
+                            # resample weight and update esitimated state and w
+                            weight = update_weight(likelihood, weight)
+                            state, w = resampling(state, w, sample, cellNumber, weight)
 
-                    if hasMeasurement:
-                        weight = update_weight(likelihood, weight)
-                        state, w = resampling(state, w, sample, cellNumber, weight)
+                        # --------------------------------------------------------------------------------------
+                        # reinitialize the weight for the next step
+                        weight = init_weight(sample)
 
-                    weight = init_weight(sample)
-
-                    estimatedState[k] = average(state, axis=0)
-                    estimatedw[k] = average(w, axis=0)
+                        # --------------------------------------------------------------------------------------
+                        # save the estimated state in
+                        estimatedState[k] = average(state, axis=0)
+                        estimatedw[k] = average(w, axis=0)
+                    else:
+                        estimatedState[k] = state
+                        estimatedw[k] = w
 
                 error = average(abs(estimatedState - densityTrue))
 
